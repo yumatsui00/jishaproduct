@@ -1,4 +1,9 @@
 interface HomePageTranslations {
+  common: {
+    topBar: {
+      vendorLinkLabel: string;
+    };
+  };
   home: {
     hero: {
       title: string;
@@ -8,6 +13,11 @@ interface HomePageTranslations {
 }
 
 const translations: HomePageTranslations = {
+  common: {
+    topBar: {
+      vendorLinkLabel: "ベンダーの方はこちら",
+    },
+  },
   home: {
     hero: {
       title: "Jisha project has started.",
