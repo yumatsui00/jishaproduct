@@ -126,7 +126,7 @@ const translations: HomePageTranslations = {
       eyebrow: "Case Studies",
       sectionTitle: "成果で、比較する。",
       sectionDescription:
-        "業界・課題・成果・データ条件で絞り込めます。",
+        "課題・業界・フェーズで実績を絞り込みできます。",
       filters: {
         challenge: "課題",
         industry: "業界",

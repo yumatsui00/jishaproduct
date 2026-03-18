@@ -6,7 +6,7 @@ import {
   CASE_STUDY_FILTERS,
 } from "../../../../logic/caseStudy/caseStudyRepository";
 
-const PAGE_SIZE = 20 as const;
+const PAGE_SIZE = 15 as const;
 
 /**
  * Normalizes repeated query values against an allowed value set.

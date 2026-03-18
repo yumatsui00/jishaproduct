@@ -3,14 +3,25 @@ export type CaseStudyFilterGroup =
   | "industry"
   | "phase";
 
+export interface CaseStudyFilterOption {
+  label: string;
+  value: string;
+}
+
+export interface CaseStudyChallengeCategory {
+  id: string;
+  label: string;
+  items: CaseStudyFilterOption[];
+}
+
 export interface CaseStudyRecord {
   id: string;
   slug: string;
   companyName: string;
   serviceName: string;
-  industry: string;
-  challenge: string;
-  phase: string;
+  industry: string[];
+  challenge: string[];
+  phase: string[];
   summary: string;
   outcome: string;
   dataCondition: string;
@@ -33,15 +44,16 @@ export interface SelectionToastState {
   message: string;
 }
 
-export interface CaseStudyFilterOption {
-  label: string;
-  value: string;
-}
-
 export interface CaseStudyFilterGroups {
-  challenge: CaseStudyFilterOption[];
+  challenge: CaseStudyChallengeCategory[];
   industry: CaseStudyFilterOption[];
   phase: CaseStudyFilterOption[];
+}
+
+export interface CaseStudyDraftFilters {
+  challenge: string[];
+  industry: string[];
+  phase: string[];
 }
 
 export interface CaseStudySearchParams {
@@ -49,14 +61,14 @@ export interface CaseStudySearchParams {
   selectedIndustries: string[];
   selectedPhases: string[];
   page: number;
-  pageSize: 20;
+  pageSize: 15;
 }
 
 export interface CaseStudyListResponse {
   items: CaseStudyRecord[];
   totalCount: number;
   currentPage: number;
-  pageSize: 20;
+  pageSize: 15;
   totalPages: number;
   availableFilters: CaseStudyFilterGroups;
 }

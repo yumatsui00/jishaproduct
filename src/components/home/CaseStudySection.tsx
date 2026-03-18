@@ -8,17 +8,13 @@ import CaseStudyFilterPanel from "./CaseStudyFilterPanel";
 import SelectionToast from "./SelectionToast";
 
 import type {
+  CaseStudyChallengeCategory,
+  CaseStudyDraftFilters,
   CaseStudySelectionState,
   CaseStudyFilterGroups,
   CaseStudyListResponse,
   SelectionToastState,
 } from "@/types/caseStudy";
-
-interface DraftFilters {
-  challenge: string[];
-  industry: string[];
-  phase: string[];
-}
 
 interface ApiSuccess {
   ok: true;
@@ -35,7 +31,7 @@ interface ApiFailure {
 
 type ApiResponse = ApiSuccess | ApiFailure;
 
-const emptyFilters: DraftFilters = {
+const emptyFilters: CaseStudyDraftFilters = {
   challenge: [],
   industry: [],
   phase: [],
@@ -57,7 +53,10 @@ const TOAST_DURATION_MS = 3000;
  * @param page Current page number.
  * @returns URL search params string.
  */
-function buildQuery(filters: DraftFilters, page: number): string {
+function buildQuery(
+  filters: CaseStudyDraftFilters,
+  page: number,
+): string {
   const searchParams = new URLSearchParams({ page: String(page) });
 
   filters.challenge.forEach((value) =>
@@ -85,15 +84,44 @@ function toggleValue(current: string[], value: string): string[] {
 }
 
 /**
+ * Toggles all child items for one challenge category.
+ *
+ * @param current Current selected challenge values.
+ * @param category Challenge category metadata.
+ * @returns Updated selected challenge values.
+ */
+function toggleCategoryValues(
+  current: string[],
+  category: CaseStudyChallengeCategory,
+): string[] {
+  const next = new Set(current);
+  const allSelected = category.items.every((item) =>
+    next.has(item.value),
+  );
+
+  category.items.forEach((item) => {
+    if (allSelected) {
+      next.delete(item.value);
+      return;
+    }
+
+    next.add(item.value);
+  });
+
+  return [...next];
+}
+
+/**
  * Renders the case-study search and listing section.
  *
  * @returns Interactive case-study section.
  */
 export default function CaseStudySection() {
   const labels = translations.home.caseStudies;
-  const [draftFilters, setDraftFilters] = useState<DraftFilters>(emptyFilters);
+  const [draftFilters, setDraftFilters] =
+    useState<CaseStudyDraftFilters>(emptyFilters);
   const [appliedFilters, setAppliedFilters] =
-    useState<DraftFilters>(emptyFilters);
+    useState<CaseStudyDraftFilters>(emptyFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [items, setItems] = useState<CaseStudyListResponse["items"]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -178,10 +206,34 @@ export default function CaseStudySection() {
    * @param value Filter value to toggle.
    * @returns Nothing.
    */
-  function handleToggle(group: keyof DraftFilters, value: string) {
+  function handleToggle(
+    group: keyof CaseStudyDraftFilters,
+    value: string,
+  ) {
     setDraftFilters((current) => ({
       ...current,
       [group]: toggleValue(current[group], value),
+    }));
+  }
+
+  /**
+   * Updates draft challenge filters for one middle category toggle.
+   *
+   * @param categoryId Challenge category identifier.
+   * @returns Nothing.
+   */
+  function handleChallengeCategoryToggle(categoryId: string) {
+    const category = availableFilters.challenge.find(
+      (current) => current.id === categoryId,
+    );
+
+    if (!category) {
+      return;
+    }
+
+    setDraftFilters((current) => ({
+      ...current,
+      challenge: toggleCategoryValues(current.challenge, category),
     }));
   }
 
@@ -273,6 +325,7 @@ export default function CaseStudySection() {
             draftFilters={draftFilters}
             isLoading={isLoading}
             onToggle={handleToggle}
+            onToggleChallengeCategory={handleChallengeCategoryToggle}
             onSearch={handleSearch}
           />
           <div className="space-y-5">

@@ -64,7 +64,7 @@ export default function HomeHeroSection() {
                   </p>
                 </div>
                 <div className="rounded-[1.25rem] bg-white/10 p-4">
-                  <p className="text-3xl font-semibold">20</p>
+                  <p className="text-3xl font-semibold">15</p>
                   <p className="mt-2 text-sm text-slate-300">
                     {metrics.cardsPerPage}
                   </p>
