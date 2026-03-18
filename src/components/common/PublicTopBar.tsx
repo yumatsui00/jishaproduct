@@ -12,7 +12,7 @@ export default function PublicTopBar() {
   const { vendorLinkLabel } = translations.common.topBar;
 
   return (
-    <header className="border-b border-black/10 bg-white">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-black/10 bg-white/84 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="shrink-0">
           <Image
