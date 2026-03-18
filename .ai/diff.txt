@@ -1,0 +1,587 @@
+diff --git a/.ai/diff.txt b/.ai/diff.txt
+index 276c334..e69de29 100644
+--- a/.ai/diff.txt
++++ b/.ai/diff.txt
+@@ -1,375 +0,0 @@
+-diff --git a/AI/task/instruction.md b/AI/task/instruction.md
+-index f1f6e44..5b3d511 100644
+---- a/AI/task/instruction.md
+-+++ b/AI/task/instruction.md
+-@@ -1,20 +1,20 @@
+- # Implementation Instruction
+- 
+--> **This document is the ONLY specification for the feature.**
+--> The AI must implement **strictly** according to this instruction and repository-wide rules
+-+> **This document is the ONLY specification for the feature.**  
+-+> The AI must implement **strictly** according to this instruction and repository-wide rules  
+- >
+- > **Forbidden actions**
+--> - Adding new features not described here
+--> - Guessing or assuming unspecified behavior
+--> - Refactoring unrelated code
+--> - Changing data structures unless explicitly stated
+--> - UI redesign beyond the minimal page defined here
+-+> - Adding new features not described here  
+-+> - Guessing or assuming unspecified behavior  
+-+> - Refactoring unrelated code  
+-+> - Changing data structures unless explicitly stated  
+-+> - UI redesign  
+- > - Modifying any logic or files outside the defined scope
+- 
+- ---
+- 
+- ## 1. Overview
+--This feature starts the Next.js project by replacing the default create-next-app home screen with a minimal original top page that confirms the application is running. The purpose is to establish the first visible page and remove starter-template content so development can continue from a clean baseline. The behavior is limited to static rendering of a simple initial page with project-specific text. This does not extend any existing business feature, API, or domain logic.
+-+This feature adds a shared top bar for non-authenticated users and makes it render across the application through the global layout. The top bar must provide a clickable logo on the left that routes to `/` and a vendor link on the right that routes to `/vendor`. This is a common UI addition only; it does not add business logic, API behavior, or authenticated-user behavior.
+- 
+- ---
+- 
+-@@ -22,60 +22,67 @@ This feature starts the Next.js project by replacing the default create-next-app
+- 
+- ## 2.1 In Scope (MUST implement)
+- 
+--- [ ] Replace the default content in `src/app/page.tsx` with a simple static top page for project start-up
+--- [ ] Use translation keys for all user-visible text on the page instead of hard-coded UI strings
+--- [ ] Define only the translation keys needed for this initial page in `assets/translations/jp.ts`
+--- [ ] Update page metadata in `src/app/layout.tsx` so it no longer uses create-next-app defaults
+--- [ ] Keep the page implementation within the App Router structure already present in `src/app`
+--- [ ] Keep the page static only; no forms, API calls, repository access, or business logic
+-+- [ ] Create a non-authenticated shared top bar component under `src/components/common`.
+-+- [ ] Render `public/Logo.png` on the left side of the top bar.
+-+- [ ] Make the logo clickable and route to `/`.
+-+- [ ] Render a right-side link for vendors that routes to `/vendor`.
+-+- [ ] Use the main white visual style for the top bar.
+-+- [ ] Add required translation keys for the top bar text.
+-+- [ ] Integrate the shared top bar into the global layout so it appears on all pages that use `src/app/layout.tsx`.
+- 
+- ## 2.2 Out of Scope (MUST NOT implement)
+- 
+- - No refactoring of unrelated code
+--- No renaming existing identifiers unless required for this page implementation
+--- No new endpoints, route handlers, or server actions
+--- No additions under `logic/`, `db/`, `src/utils/`, or `src/types/`
+--- No database, JSON, CSV, or external API integration
+--- No localization framework introduction beyond the direct translation definition needed for this page
+--- No dark-mode redesign, animation system, or advanced visual polish
+--- No new reusable component library setup
+-+- No renaming existing identifiers
+-+- No changes to UI beyond what is defined in In Scope
+-+- No new endpoints or data models not explicitly listed
+-+- No design or layout overhaul
+-+- No performance optimization unless required
+- - No modification of files not listed in Section 3
+-+- No implementation of an authenticated-user top bar
+-+- No implementation of the `/vendor` page itself
+-+- No addition of business logic, repositories, API routes, or database access
+-+- No hardcoded UI text in the component
+- 
+- ---
+- 
+- # 3. Affected Files & Locations
+- 
+--> The AI may only create or modify files listed here.
+-+> The AI may only create or modify files listed here.  
+- > All other files are strictly off-limits.
+- 
+- ## 3.1 New Files
+--
+--- None
+-+- `src/components/common/PublicTopBar.tsx`: shared non-authenticated top bar component rendered across the app
+- 
+- ## 3.2 Modified Files
+--
+--- `src/app/page.tsx`: replace starter template UI with the first project home page
+--- `src/app/layout.tsx`: update metadata values from the default create-next-app values to project-start values
+--- `assets/translations/jp.ts`: add the translation object or exported values required by the page text
+-+- `src/app/layout.tsx`: insert the shared top bar into the global app layout so it is visible on all pages
+-+- `assets/translations/jp.ts`: add the translation keys required by the new top bar UI
+- 
+- ## 3.3 Reference Only (MUST NOT modify)
+--
+- - `AGENTS.md`
+- - `AI/task/seed.md`
+--- `AI/task/templates/instruction_template.md`
+--- `src/app/globals.css`
+--- `src/types/result.ts`
+-+- `public/Logo.png`
+-+- `src/app/page.tsx`
+- 
+- ---
+- 
+- # 4. Data Structures & Models
+- 
+--This feature does not introduce domain models, API payloads, or persistence models.
+-+> All relevant data definitions must be explicitly stated here.  
+-+> The AI must **not** add, remove, or alter fields unless stated in this section.
+- 
+- ## 4.1 TypeScript Interfaces / Types
+- 
+- ```ts
+--export interface HomePageTranslations {
+-+interface TopBarTranslations {
+-+  common: {
+-+    topBar: {
+-+      vendorLinkLabel: string;
+-+    };
+-+  };
+-+}
+-+
+-+interface HomePageTranslations extends TopBarTranslations {
+-   home: {
+-     hero: {
+-       title: string;
+-@@ -87,79 +94,98 @@ export interface HomePageTranslations {
+- 
+- Constraints:
+- 
+--- Only the keys required for the initial page may be defined
+--- All page text must come from the translation structure
+--- No additional shared types may be introduced outside the listed files
+-+- `vendorLinkLabel` must contain the UI label for the vendor link
+-+- Existing `home.hero.title` and `home.hero.description` keys must remain available
+-+- No additional translation namespaces or keys may be introduced unless required by this feature
+- 
+- ## 4.2 CSV / Database Schema
+- 
+--Not applicable.
+-+This feature does not interact with CSV files or a database.
+- 
+- ---
+- 
+- # 5. Logic Specification
+- 
+--This feature must remain presentation-only and must not add business logic.
+--
+- ## 5.1 Inputs
+- 
+--- Static translation values imported from `assets/translations/jp.ts`
+--- No user input
+--- No route parameters
+--- No API request data
+--- No repository or database data
+-+- Translation value: `translations.common.topBar.vendorLinkLabel`
+-+- Static asset path: `/Logo.png`
+-+- Navigation targets: `/` and `/vendor`
+-+- `children: React.ReactNode` received by `src/app/layout.tsx`
+- 
+- ## 5.2 Processing Flow (Strict Order)
+- 
+--1. Load the translation values required for the home page
+--2. Render the page title and supporting description from those values
+--3. Export the page component as the default App Router home page
+-+1. Extend the translation object with the top bar label key
+-+2. Create the shared `PublicTopBar` component under `src/components/common`
+-+3. Render the logo image on the left and wrap it with navigation to `/`
+-+4. Render the vendor link label on the right and link it to `/vendor`
+-+5. Apply a white main visual style to the top bar
+-+6. Mount the shared top bar from `src/app/layout.tsx` above page content so all pages display it
+- 
+- ## 5.3 Outputs
+- 
+- The feature must produce:
+- 
+--- A rendered static home page at `/`
+--- Project-specific metadata instead of create-next-app defaults
+--- A translation-backed source for all user-visible text on the page
+-+- A reusable `PublicTopBar` component
+-+- A globally rendered top bar for all pages using the root layout
+-+- A logo-based navigation entry to `/`
+-+- A vendor link navigation entry to `/vendor`
+-+- Updated translation data containing the new top bar label
+- 
+- ## 5.4 Error Handling
+- 
+--- No new `Result<T>`-based logic is required because this feature must not add business logic
+--- The implementation must avoid runtime-only assumptions such as nullable translation access
+--- If a translation object is defined, it must be typed so missing keys are caught by TypeScript
+-+No `logic/`, API, repository, or `Result<T>` handling is introduced by this feature.
+-+
+-+UI implementation rules:
+-+
+-+- The component must avoid introducing runtime assumptions beyond the listed translation key and static asset
+-+- If existing layout structure is preserved, the top bar must not block page content rendering
+- 
+- ---
+- 
+--# 6. UI Specification
+-+# 6. UI Specification (If applicable)
+- 
+- ## 6.1 Component Structure
+- 
+--Define:
+-+Component:
+-+
+-+- `PublicTopBar`
+-+
+-+Props:
+- 
+--- Page component: default export in `src/app/page.tsx`
+- - No props
+--- No internal state
+--- No interaction with `logic/` or API routes
+-+
+-+Internal state:
+-+
+-+- No local state
+-+
+-+Interaction:
+-+
+-+- Reads the vendor label from the translation module
+-+- Uses standard Next.js navigation primitives for the two links
+- 
+- ## 6.2 Layout & Behavior
+- 
+--- Display a simple initial page that clearly indicates the project has started
+--- Include one main heading and one short supporting description
+--- Keep the layout minimal and static
+--- Remove all create-next-app starter links, logos, and external navigation
+--- The page must render correctly on desktop and mobile widths using existing styling capabilities
+--- Do not add forms, buttons with behavior, modal dialogs, tabs, or dynamic sections
+-+- Place the top bar at the top of the global layout
+-+- Left area: display `public/Logo.png`
+-+- Clicking the logo navigates to `/`
+-+- Right area: display the vendor link label
+-+- Clicking the vendor link navigates to `/vendor`
+-+- The main color direction of the top bar must be white
+-+- Keep behavior limited to layout-level rendering; no dropdowns, menus, auth state branching, or responsive redesign beyond what is necessary for basic display
+- 
+- ## 6.3 Translations
+- 
+--All UI text must use translation keys.
+-+All UI text must use translation keys.  
+- **Hard-coded text is strictly forbidden.**
+- 
+--Required keys:
+-+Required key:
+-+
+-+```ts
+-+common.topBar.vendorLinkLabel
+-+```
+- 
+--- `home.hero.title`
+--- `home.hero.description`
+-+The value should represent the seed requirement text for the vendor link.
+- 
+- ---
+- 
+-@@ -167,12 +193,12 @@ Required keys:
+- 
+- The implementation must handle:
+- 
+--- No dependency on missing API, logic, or repository layers
+--- No reliance on sample data under `db/`
+--- No remaining create-next-app default title or description metadata
+--- No remaining starter-template UI content on the home page
+--- Type-safe access to translation keys
+--- A minimal implementation only; do not infer extra sections such as features, pricing, contact, or dashboard links
+-+- Rendering through the root layout without removing existing page content
+-+- The top bar appearing on the home page and any future pages under the same layout
+-+- Absence of authenticated-user branching in this feature
+-+- Reuse of the existing `public/Logo.png` asset without duplicating or moving it
+-+- Preservation of existing translation keys and metadata
+-+- No direct hardcoded UI strings in the new component
+- 
+- ---
+- 
+-@@ -183,7 +209,10 @@ The feature is considered complete only if:
+- - All items in **Section 2.1 (In Scope)** are fully implemented
+- - No scope creep: nothing outside In Scope is added
+- - Only files listed in **Section 3** were modified
+--- The `/` page no longer shows create-next-app default content
+--- All visible page text is sourced from `assets/translations/jp.ts`
+--- `src/app/layout.tsx` metadata no longer uses `Create Next App` or `Generated by create next app`
+--- No API route, logic layer, repository layer, or sample data changes were introduced
+-+- All data structures match **Section 4** exactly
+-+- A new shared component exists at `src/components/common/PublicTopBar.tsx`
+-+- `src/app/layout.tsx` renders the shared top bar for all pages
+-+- The logo is visible on the left and routes to `/`
+-+- The vendor link is visible on the right and routes to `/vendor`
+-+- The top bar uses a white main visual style
+-+- The vendor link label is sourced from translations, not hardcoded
+-diff --git a/AI/task/seed.md b/AI/task/seed.md
+-index 879efa3..da20c84 100644
+---- a/AI/task/seed.md
+-+++ b/AI/task/seed.md
+-@@ -1,17 +1,20 @@
+- # Feature Seed
+- 
+- ## 1. Summary (必須・短く)
+--プロジェクトを開始する。
+-+プロジェクト全体使用するトップバーを作成する。
+- ---
+- 
+- ## 2. Purpose / 背景
+--next.jsでの開発を開始するために、コマンドを実行し、最初のページを作成する。デザインは適当で構わない。
+-+プロジェクト全体で使用するトップバーを作成する。非ログイン者専用のトップバーであり、全ページでこのロゴか、後に作成するログイン者専用のトップバーが表示される。
+- 
+- ---
+- 
+- ## 3. Requirements (箇条書きでOK)
+--AGENTS.mdを参照する
+--
+-+・メインカラーは白で作成する
+-+・トップバーの左側にpublic/Logo.pngを置き、それをクリックするとルートページへ遷移する
+-+・トップバーの右側にベンダーの方はこちらのと記載されたリンク付きの文字を配置する。(/vendorへ遷移する)
+-+・src/components/commonを作成し、そこに非ログイン者用トップバーとして作成する。
+-+・全ページで必ず使用するようにする
+- 
+- ---
+- 
+-diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
+-index 6048778..9265360 100644
+---- a/assets/translations/jp.ts
+-+++ b/assets/translations/jp.ts
+-@@ -1,4 +1,9 @@
+- interface HomePageTranslations {
+-+  common: {
+-+    topBar: {
+-+      vendorLinkLabel: string;
+-+    };
+-+  };
+-   home: {
+-     hero: {
+-       title: string;
+-@@ -8,6 +13,11 @@ interface HomePageTranslations {
+- }
+- 
+- const translations: HomePageTranslations = {
+-+  common: {
+-+    topBar: {
+-+      vendorLinkLabel: "ベンダーの方はこちら",
+-+    },
+-+  },
+-   home: {
+-     hero: {
+-       title: "Jisha project has started.",
+-diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+-index aeb07a1..0619fe7 100644
+---- a/src/app/layout.tsx
+-+++ b/src/app/layout.tsx
+-@@ -1,5 +1,8 @@
+- import type { Metadata } from "next";
+- import { Geist, Geist_Mono } from "next/font/google";
+-+
+-+import PublicTopBar from "@/components/common/PublicTopBar";
+-+
+- import "./globals.css";
+- 
+- const geistSans = Geist({
+-@@ -27,7 +30,10 @@ export default function RootLayout({
+-       <body
+-         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+-       >
+--        {children}
+-+        <div className="min-h-screen bg-background text-foreground">
+-+          <PublicTopBar />
+-+          {children}
+-+        </div>
+-       </body>
+-     </html>
+-   );
+diff --git a/AI/task/seed.md b/AI/task/seed.md
+index 88bb13c..9136523 100644
+--- a/AI/task/seed.md
++++ b/AI/task/seed.md
+@@ -1,15 +1,31 @@
+ # Feature Seed
+ 
+ ## 1. Summary (必須・短く)
+-プロジェクト全体使用するトップバーを作成する。
++ランディングページの大枠を作成する。
+ ---
+ 
+ ## 2. Purpose / 背景
+-
++ランディングページの大枠を作成する。作成に当り必要なデータはサンプルデータを作成する。
+ 
+ ---
+ 
+ ## 3. Requirements (箇条書きでOK)
++・ランディングページは複数セクションから構成される
++・最初にアプリについての説明を表示するセクション（以降セクション１と呼ぶ）。
++・セクション１のH1: AI開発を、実績で学ぶ
++・セクション１のサブタイトル：成果・データ条件・期間まで見て、納得して選べる
++・セクション１のCTA：実績を見る(Primary) 無料で相談する(Secondary) ホバーなどのデザインはほしいが、繊維はまだ必要無い
++
++・次に実績カードセクション
++・見出し：成果で、比較する。
++・サブ：業界・課題・成果・データ条件で絞り込めます。
++・画面左部にフィルタリングできるセクション。画面の1/3程度の幅をイメージ
++・画面右部に実績カードが縦に並んでいる。一枚の実績カードは残りの幅を取るような横幅
++・フィルタリングには、課題、業界、フェーズの大項目があり、少項目は適当に作成して良い。複数選択可能で、最下部にある検索ボタンを押すとフィルタリングされた実績カードが表示
++・実績カードは一度に最大20枚表示。ページ下部にある次の記事、前の記事ボタンで次の20枚を表示
++・実績カードデザインはuiを参照
++・サンプルデータは60件ほど作成してほしい
++
+ 
+ ---
+ 
+@@ -21,7 +37,7 @@
+ ---
+ 
+ ## 5. UI Notes (あれば)
+-
++実績カードはAI/task/uiを参考
+ 
+ ---
+ 
+diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
+index a1544b4..224085c 100644
+--- a/assets/translations/jp.ts
++++ b/assets/translations/jp.ts
+@@ -19,6 +19,54 @@ interface HomePageTranslations {
+     hero: {
+       title: string;
+       description: string;
++      primaryCta: string;
++      secondaryCta: string;
++      eyebrow: string;
++      metricsTitle: string;
++      metrics: {
++        caseStudies: string;
++        cardsPerPage: string;
++        filterGroups: string;
++      };
++      highlights: {
++        outcomeTitle: string;
++        outcomeBody: string;
++        trustTitle: string;
++        trustBody: string;
++      };
++    };
++    caseStudies: {
++      eyebrow: string;
++      sectionTitle: string;
++      sectionDescription: string;
++      filters: {
++        challenge: string;
++        industry: string;
++        phase: string;
++      };
++      actions: {
++        search: string;
++        previous: string;
++        next: string;
++      };
++      states: {
++        empty: string;
++        error: string;
++        loading: string;
++      };
++      meta: {
++        pageLabel: string;
++        totalLabel: string;
++      };
++      card: {
++        price: string;
++        initialCost: string;
++        freePlan: string;
++        freeTrial: string;
++        dataCondition: string;
++        duration: string;
++        outcome: string;
++      };
+     };
+   };
+ }
+@@ -42,9 +90,59 @@ const translations: HomePageTranslations = {
+   },
+   home: {
+     hero: {
+-      title: "Jisha project has started.",
++      title: "AI開発を、実績で学ぶ",
+       description:
+-        "This is the initial top page for the Next.js application.",
++        "成果・データ条件・期間まで見て、納得して選べる",
++      primaryCta: "実績を見る",
++      secondaryCta: "無料で相談する",
++      eyebrow: "AI Development Case Library",
++      metricsTitle: "Selected Metrics",
++      metrics: {
++        caseStudies: "case studies",
++        cardsPerPage: "cards per page",
++        filterGroups: "filter groups",
++      },
++      highlights: {
++        outcomeTitle: "Outcome",
++        outcomeBody:
++          "成果・データ条件・期間まで同じ面で比較できる構成に限定。",
++        trustTitle: "Trust",
++        trustBody: "まず実績を見て、次に相談する導線を一画面に集約。",
++      },
++    },
++    caseStudies: {
++      eyebrow: "Case Studies",
++      sectionTitle: "成果で、比較する。",
++      sectionDescription:
++        "業界・課題・成果・データ条件で絞り込めます。",
++      filters: {
++        challenge: "課題",
++        industry: "業界",
++        phase: "フェーズ",
++      },
++      actions: {
++        search: "検索する",
++        previous: "前の記事",
++        next: "次の記事",
++      },
++      states: {
++        empty: "条件に一致する実績はありません。",
++        error: "実績データの取得に失敗しました。",
++        loading: "実績データを読み込み中です。",
++      },
++      meta: {
++        pageLabel: "ページ",
++        totalLabel: "総件数",
++      },
++      card: {
++        price: "利用料金",
++        initialCost: "初期費用",
++        freePlan: "無料プラン",
++        freeTrial: "無料トライアル",
++        dataCondition: "データ条件",
++        duration: "期間",
++        outcome: "成果",
++      },
+     },
+   },
+ };
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 72681c9..d2ee51e 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,7 +1,7 @@
+ import PublicTopBar from "@/components/common/PublicTopBar";
+ import PublicFooter from "@/components/common/PublicFooter";
+-
+-import translations from "../../assets/translations/jp";
++import CaseStudySection from "@/components/home/CaseStudySection";
++import HomeHeroSection from "@/components/home/HomeHeroSection";
+ 
+ /**
+  * Renders the public home page.
+@@ -9,21 +9,11 @@ import translations from "../../assets/translations/jp";
+  * @returns The home page.
+  */
+ export default function Home() {
+-  const { title, description } = translations.home.hero;
+-
+   return (
+-    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_46%,#ffffff_100%)]">
++    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#f4f8ff_38%,#f8fbff_68%,#ffffff_100%)]">
+       <PublicTopBar />
+-      <section className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-6 py-20">
+-        <div className="w-full max-w-3xl rounded-[2rem] border border-slate-200/80 bg-white/80 px-8 py-16 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+-          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+-            {title}
+-          </h1>
+-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
+-            {description}
+-          </p>
+-        </div>
+-      </section>
++      <HomeHeroSection />
++      <CaseStudySection />
+       <PublicFooter />
+     </main>
+   );
