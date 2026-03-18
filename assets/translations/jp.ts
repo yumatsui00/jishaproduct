@@ -92,6 +92,37 @@ interface HomePageTranslations {
       };
     };
   };
+  appointment: {
+    page: {
+      title: string;
+      description: string;
+    };
+    selectedArticles: {
+      title: string;
+      empty: string;
+      error: string;
+    };
+    form: {
+      companyName: string;
+      contactName: string;
+      jobTitle: string;
+      email: string;
+      phone: string;
+      referralSource: string;
+      industry: string;
+      challenge: string;
+      objective: string;
+      projectStartTiming: string;
+      budget: string;
+      details: string;
+      submit: string;
+      optional: string;
+    };
+    validation: {
+      required: string;
+      email: string;
+    };
+  };
 }
 
 const translations: HomePageTranslations = {
@@ -189,6 +220,38 @@ const translations: HomePageTranslations = {
         selectLabel: "比較",
         maxSelectionError: "一度に最大5件まで選択できます。",
       },
+    },
+  },
+  appointment: {
+    page: {
+      title: "アポイントメントフォーム",
+      description:
+        "選択した記事を確認しながら、会社情報とご相談内容を入力してください。",
+    },
+    selectedArticles: {
+      title: "選択中の記事",
+      empty: "選択中の記事はありません。",
+      error: "存在しない記事IDが含まれています。",
+    },
+    form: {
+      companyName: "貴社名",
+      contactName: "担当者名",
+      jobTitle: "役職",
+      email: "email",
+      phone: "電話",
+      referralSource: "どこで知りましたか",
+      industry: "業種選択",
+      challenge: "課題選択",
+      objective: "目的、検討状況",
+      projectStartTiming: "プロジェクト着手タイミング",
+      budget: "予算",
+      details: "内容",
+      submit: "送信する",
+      optional: "任意",
+    },
+    validation: {
+      required: "必須項目です。",
+      email: "メールアドレスの形式が正しくありません。",
     },
   },
 };
