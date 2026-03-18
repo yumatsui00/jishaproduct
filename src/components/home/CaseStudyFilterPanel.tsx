@@ -146,7 +146,7 @@ export default function CaseStudyFilterPanel(
           type="button"
           onClick={props.onSearch}
           disabled={props.isLoading}
-          className="inline-flex min-h-12 w-full items-center justify-center rounded-[0.8rem] bg-slate-950 px-5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-[0.8rem] bg-sky-600 px-5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {actions.search}
         </button>

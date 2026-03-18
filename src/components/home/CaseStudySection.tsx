@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import translations from "../../../assets/translations/jp";
 import CaseStudyCard from "./CaseStudyCard";
 import CaseStudyFilterPanel from "./CaseStudyFilterPanel";
+import SelectionActionBar from "./SelectionActionBar";
 import SelectionToast from "./SelectionToast";
+import TopNotification from "./TopNotification";
 
 import type {
   CaseStudyChallengeCategory,
@@ -45,6 +51,7 @@ const emptyAvailableFilters: CaseStudyFilterGroups = {
 
 const MAX_SELECTIONS = 5 as const;
 const TOAST_DURATION_MS = 3000;
+const NOTIFICATION_DURATION_MS = 3000;
 
 /**
  * Builds the query string for a case-study request.
@@ -118,6 +125,7 @@ function toggleCategoryValues(
  */
 export default function CaseStudySection() {
   const labels = translations.home.caseStudies;
+  const requestIdRef = useRef(0);
   const [draftFilters, setDraftFilters] =
     useState<CaseStudyDraftFilters>(emptyFilters);
   const [appliedFilters, setAppliedFilters] =
@@ -138,16 +146,21 @@ export default function CaseStudySection() {
     open: false,
     message: "",
   });
+  const [topNotification, setTopNotification] = useState({
+    open: false,
+    message: "",
+  });
+  const [hasReachedEnd, setHasReachedEnd] = useState(false);
 
   useEffect(() => {
-    let active = true;
+    const requestId = ++requestIdRef.current;
 
-    async function fetchCaseStudies() {
+    async function fetchInitialCaseStudies() {
       setIsLoading(true);
       setErrorMessage("");
 
       try {
-        const query = buildQuery(appliedFilters, currentPage);
+        const query = buildQuery(appliedFilters, 1);
         const response = await fetch(`/api/case-studies?${query}`);
         const payload = (await response.json()) as ApiResponse;
 
@@ -155,7 +168,7 @@ export default function CaseStudySection() {
           throw new Error("Failed to fetch case studies.");
         }
 
-        if (!active) {
+        if (requestId !== requestIdRef.current) {
           return;
         }
 
@@ -163,27 +176,24 @@ export default function CaseStudySection() {
         setTotalPages(payload.data.totalPages);
         setCurrentPage(payload.data.currentPage);
         setAvailableFilters(payload.data.availableFilters);
+        setHasReachedEnd(payload.data.currentPage >= payload.data.totalPages);
       } catch (error) {
         console.error(error);
 
-        if (!active) {
+        if (requestId !== requestIdRef.current) {
           return;
         }
 
         setErrorMessage(labels.states.error);
       } finally {
-        if (active) {
+        if (requestId === requestIdRef.current) {
           setIsLoading(false);
         }
       }
     }
 
-    fetchCaseStudies();
-
-    return () => {
-      active = false;
-    };
-  }, [appliedFilters, currentPage, labels.states.error]);
+    void fetchInitialCaseStudies();
+  }, [appliedFilters, labels.states.error]);
 
   useEffect(() => {
     if (!toastState.open) {
@@ -198,6 +208,71 @@ export default function CaseStudySection() {
       window.clearTimeout(timeoutId);
     };
   }, [toastState.open, toastState.message]);
+
+  useEffect(() => {
+    if (!topNotification.open) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setTopNotification((current) => ({ ...current, open: false }));
+    }, NOTIFICATION_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [topNotification.open, topNotification.message]);
+
+  /**
+   * Loads case studies from the API.
+   *
+   * @param page Requested page number.
+   * @param append Whether to append the result items.
+   * @returns Nothing.
+   */
+  async function fetchCaseStudies(page: number, append: boolean) {
+    const requestId = ++requestIdRef.current;
+
+    setIsLoading(true);
+
+    if (!append) {
+      setErrorMessage("");
+    }
+
+    try {
+      const query = buildQuery(appliedFilters, page);
+      const response = await fetch(`/api/case-studies?${query}`);
+      const payload = (await response.json()) as ApiResponse;
+
+      if (!response.ok || !payload.ok) {
+        throw new Error("Failed to fetch case studies.");
+      }
+
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      setItems((current) =>
+        append ? [...current, ...payload.data.items] : payload.data.items,
+      );
+      setTotalPages(payload.data.totalPages);
+      setCurrentPage(payload.data.currentPage);
+      setAvailableFilters(payload.data.availableFilters);
+      setHasReachedEnd(payload.data.currentPage >= payload.data.totalPages);
+    } catch (error) {
+      console.error(error);
+
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      setErrorMessage(labels.states.error);
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }
 
   /**
    * Updates draft filter state for one checkbox change.
@@ -248,21 +323,25 @@ export default function CaseStudySection() {
   }
 
   /**
-   * Moves to the previous result page when possible.
+   * Loads more case-study items when available.
    *
    * @returns Nothing.
    */
-  function handlePrevious() {
-    setCurrentPage((page) => Math.max(1, page - 1));
-  }
+  function handleLoadMore() {
+    if (isLoading) {
+      return;
+    }
 
-  /**
-   * Moves to the next result page when possible.
-   *
-   * @returns Nothing.
-   */
-  function handleNext() {
-    setCurrentPage((page) => Math.min(totalPages, page + 1));
+    if (currentPage >= totalPages) {
+      setHasReachedEnd(true);
+      setTopNotification({
+        open: true,
+        message: labels.notification.noMoreArticles,
+      });
+      return;
+    }
+
+    void fetchCaseStudies(currentPage + 1, true);
   }
 
   /**
@@ -306,6 +385,14 @@ export default function CaseStudySection() {
       <SelectionToast
         open={toastState.open}
         message={toastState.message}
+      />
+      <TopNotification
+        open={topNotification.open}
+        message={topNotification.message}
+      />
+      <SelectionActionBar
+        open={selectionState.selectedIds.length > 0}
+        selectedCount={selectionState.selectedIds.length}
       />
       <div className="mx-auto w-full max-w-7xl">
         <div className="max-w-3xl">
@@ -356,22 +443,14 @@ export default function CaseStudySection() {
                 </div>
               ) : null}
             </div>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex justify-center">
               <button
                 type="button"
-                onClick={handlePrevious}
-                disabled={isLoading || currentPage <= 1}
-                className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-900 transition-colors hover:border-slate-950 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handleLoadMore}
+                disabled={isLoading || hasReachedEnd}
+                className="inline-flex min-h-12 items-center justify-center rounded-[0.95rem] bg-sky-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
               >
-                {labels.actions.previous}
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={isLoading || currentPage >= totalPages}
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-slate-950 px-6 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {labels.actions.next}
+                {labels.actions.loadMore}
               </button>
             </div>
           </div>

@@ -77,7 +77,7 @@ export default function CaseStudyCard({
             <div className="mt-5 flex items-center">
               <button
                 type="button"
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-[0.7rem] border border-sky-200 bg-sky-100 px-4 text-sm font-semibold text-sky-800 transition-colors hover:bg-sky-200"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-[0.8rem] border border-sky-500 bg-sky-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-sky-500"
               >
                 {labels.viewArticle}
               </button>
@@ -171,19 +171,19 @@ export default function CaseStudyCard({
             </div>
           </div>
         </div>
-        <div className="flex h-full min-h-[19rem] flex-row items-center gap-3 bg-[linear-gradient(180deg,#eff9ff_0%,#d9f1ff_100%)] p-4 lg:flex-col lg:justify-center lg:items-center">
-          <div className="rounded-[0.8rem] bg-white/72 px-3 py-4 text-center text-xs text-slate-700 shadow-sm lg:w-full">
+        <div className="flex h-full min-h-[19rem] flex-row items-center gap-2 border-t border-slate-200 bg-[linear-gradient(180deg,#f2fbff_0%,#e0f2fe_100%)] p-3 lg:flex-col lg:justify-center lg:items-center lg:border-t-0 lg:border-l">
+          <div className="rounded-[1rem] border border-sky-100 bg-white/90 px-3 py-3 text-center text-xs text-slate-700 shadow-[0_14px_34px_rgba(14,165,233,0.10)] lg:w-full">
             <p className="font-semibold text-slate-900">{labels.duration}</p>
             <p className="mt-1">{item.durationLabel}</p>
             <p className="mt-3 font-semibold text-slate-900">{labels.price}</p>
             <p className="mt-1 leading-5">{mergedCost}</p>
           </div>
-          <label className="flex min-w-14 items-center justify-center px-1 py-3 lg:w-full">
+          <label className="flex min-w-12 items-center justify-center rounded-[0.95rem] bg-transparent px-2 py-2 lg:w-full">
             <input
               type="checkbox"
               checked={checked}
               onChange={(event) => onCheckedChange(event.target.checked)}
-              className="h-5 w-5 rounded-[0.3rem] border-slate-300 bg-white text-slate-950 shadow-sm focus:ring-2 focus:ring-slate-900"
+              className="h-5 w-5 rounded-[0.35rem] border-slate-300 bg-white text-sky-600 shadow-sm focus:ring-2 focus:ring-sky-500"
             />
           </label>
         </div>
