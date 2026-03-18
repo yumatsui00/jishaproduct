@@ -3,8 +3,15 @@
 import { useState } from "react";
 
 import AppointmentField from "@/components/appointment/AppointmentField";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   AppointmentFormErrors,
@@ -120,6 +127,7 @@ export default function AppointmentForm(
   props: AppointmentFormProps,
 ) {
   const labels = translations.appointment.form;
+  const placeholders = labels.placeholders;
   const [values, setValues] =
     useState<AppointmentFormValues>(initialFormValues);
   const [errors, setErrors] = useState<AppointmentFormErrors>({});
@@ -195,6 +203,8 @@ export default function AppointmentForm(
         <Input
           id="companyName"
           name="companyName"
+          aria-invalid={Boolean(errors.companyName)}
+          placeholder={placeholders.companyName}
           value={values.companyName}
           onChange={(event) =>
             handleChange("companyName", event.target.value)
@@ -210,6 +220,8 @@ export default function AppointmentForm(
         <Input
           id="contactName"
           name="contactName"
+          aria-invalid={Boolean(errors.contactName)}
+          placeholder={placeholders.contactName}
           value={values.contactName}
           onChange={(event) =>
             handleChange("contactName", event.target.value)
@@ -223,6 +235,8 @@ export default function AppointmentForm(
         <Input
           id="jobTitle"
           name="jobTitle"
+          aria-invalid={Boolean(errors.jobTitle)}
+          placeholder={placeholders.jobTitle}
           value={values.jobTitle}
           onChange={(event) =>
             handleChange("jobTitle", event.target.value)
@@ -239,6 +253,8 @@ export default function AppointmentForm(
           id="email"
           name="email"
           type="email"
+          aria-invalid={Boolean(errors.email)}
+          placeholder={placeholders.email}
           value={values.email}
           onChange={(event) => handleChange("email", event.target.value)}
         />
@@ -253,6 +269,8 @@ export default function AppointmentForm(
           id="phone"
           name="phone"
           type="tel"
+          aria-invalid={Boolean(errors.phone)}
+          placeholder={placeholders.phone}
           value={values.phone}
           onChange={(event) => handleChange("phone", event.target.value)}
         />
@@ -266,6 +284,8 @@ export default function AppointmentForm(
         <Input
           id="referralSource"
           name="referralSource"
+          aria-invalid={Boolean(errors.referralSource)}
+          placeholder={placeholders.referralSource}
           value={values.referralSource}
           onChange={(event) =>
             handleChange("referralSource", event.target.value)
@@ -279,19 +299,23 @@ export default function AppointmentForm(
         errorMessage={errors.industry}
       >
         <Select
-          id="industry"
-          name="industry"
           value={values.industry}
-          onChange={(event) =>
-            handleChange("industry", event.target.value)
-          }
+          onValueChange={(value) => handleChange("industry", value)}
         >
-          <option value=""></option>
-          {props.industryOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
+          <SelectTrigger
+            id="industry"
+            aria-invalid={Boolean(errors.industry)}
+            className="rounded-md"
+          >
+            <SelectValue placeholder={placeholders.industry} />
+          </SelectTrigger>
+          <SelectContent>
+            {props.industryOptions.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </AppointmentField>
       <AppointmentField
@@ -301,19 +325,23 @@ export default function AppointmentForm(
         errorMessage={errors.challenge}
       >
         <Select
-          id="challenge"
-          name="challenge"
           value={values.challenge}
-          onChange={(event) =>
-            handleChange("challenge", event.target.value)
-          }
+          onValueChange={(value) => handleChange("challenge", value)}
         >
-          <option value=""></option>
-          {props.challengeOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
+          <SelectTrigger
+            id="challenge"
+            aria-invalid={Boolean(errors.challenge)}
+            className="rounded-md"
+          >
+            <SelectValue placeholder={placeholders.challenge} />
+          </SelectTrigger>
+          <SelectContent>
+            {props.challengeOptions.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
         </Select>
       </AppointmentField>
       <div className="md:col-span-2">
@@ -326,6 +354,8 @@ export default function AppointmentForm(
           <Textarea
             id="objective"
             name="objective"
+            aria-invalid={Boolean(errors.objective)}
+            placeholder={placeholders.objective}
             value={values.objective}
             onChange={(event) =>
               handleChange("objective", event.target.value)
@@ -341,6 +371,8 @@ export default function AppointmentForm(
         <Input
           id="projectStartTiming"
           name="projectStartTiming"
+          aria-invalid={Boolean(errors.projectStartTiming)}
+          placeholder={placeholders.projectStartTiming}
           value={values.projectStartTiming}
           onChange={(event) =>
             handleChange("projectStartTiming", event.target.value)
@@ -354,6 +386,8 @@ export default function AppointmentForm(
         <Input
           id="budget"
           name="budget"
+          aria-invalid={Boolean(errors.budget)}
+          placeholder={placeholders.budget}
           value={values.budget}
           onChange={(event) => handleChange("budget", event.target.value)}
         />
@@ -368,6 +402,8 @@ export default function AppointmentForm(
           <Textarea
             id="details"
             name="details"
+            aria-invalid={Boolean(errors.details)}
+            placeholder={placeholders.details}
             value={values.details}
             onChange={(event) =>
               handleChange("details", event.target.value)
@@ -376,13 +412,15 @@ export default function AppointmentForm(
           />
         </AppointmentField>
       </div>
-      <div className="md:col-span-2">
-        <button
+      <div className="md:col-span-2 flex justify-center">
+        <Button
           type="submit"
-          className="mx-auto flex min-h-12 w-fit items-center justify-center rounded-md border border-slate-300 bg-white px-10 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+          variant="outline"
+          size="lg"
+          className="h-12 rounded-md bg-white px-10 text-sm"
         >
           {labels.submit}
-        </button>
+        </Button>
       </div>
     </form>
   );

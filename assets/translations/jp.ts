@@ -117,6 +117,20 @@ interface HomePageTranslations {
       details: string;
       submit: string;
       optional: string;
+      placeholders: {
+        companyName: string;
+        contactName: string;
+        jobTitle: string;
+        email: string;
+        phone: string;
+        referralSource: string;
+        industry: string;
+        challenge: string;
+        objective: string;
+        projectStartTiming: string;
+        budget: string;
+        details: string;
+      };
     };
     validation: {
       required: string;
@@ -248,6 +262,20 @@ const translations: HomePageTranslations = {
       details: "内容",
       submit: "送信する",
       optional: "任意",
+      placeholders: {
+        companyName: "株式会社サンプル",
+        contactName: "山田 太郎",
+        jobTitle: "営業企画部 マネージャー",
+        email: "example@company.co.jp",
+        phone: "03-1234-5678",
+        referralSource: "検索、紹介、展示会など",
+        industry: "業種を選択してください",
+        challenge: "課題を選択してください",
+        objective: "導入目的や現在の検討状況をご記入ください",
+        projectStartTiming: "3か月以内、来期予定など",
+        budget: "500万円程度、未定など",
+        details: "ご相談内容や実現したいことをご記入ください",
+      },
     },
     validation: {
       required: "必須項目です。",
