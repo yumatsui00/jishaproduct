@@ -1,4 +1,5 @@
 import {
+  CASE_STUDY_CHALLENGE_CATEGORIES,
   CASE_STUDY_FILTERS,
   getCaseStudyRecords,
 } from "./caseStudyRepository";
@@ -10,7 +11,7 @@ import type {
 } from "@/types/caseStudy";
 import type { Result } from "@/types/result";
 
-const PAGE_SIZE = 20 as const;
+const PAGE_SIZE = 15 as const;
 
 /**
  * Builds available filter groups from the loaded case-study dataset.
@@ -21,17 +22,23 @@ const PAGE_SIZE = 20 as const;
 function buildAvailableFilters(
   records: CaseStudyRecord[],
 ): CaseStudyFilterGroups {
-  const challenges = new Set(records.map((record) => record.challenge));
-  const industries = new Set(records.map((record) => record.industry));
-  const phases = new Set(records.map((record) => record.phase));
+  const challenges = new Set(
+    records.flatMap((record) => record.challenge),
+  );
+  const industries = new Set(records.flatMap((record) => record.industry));
+  const phases = new Set(records.flatMap((record) => record.phase));
 
   return {
-    challenge: CASE_STUDY_FILTERS.challenge.filter((value) =>
-      challenges.has(value),
-    ).map((value) => ({
-      label: value,
-      value,
-    })),
+    challenge: CASE_STUDY_CHALLENGE_CATEGORIES.map((category) => ({
+      id: category.id,
+      label: category.label,
+      items: category.items
+        .filter((value) => challenges.has(value))
+        .map((value) => ({
+          label: value,
+          value,
+        })),
+    })).filter((category) => category.items.length > 0),
     industry: CASE_STUDY_FILTERS.industry.filter((value) =>
       industries.has(value),
     ).map((value) => ({
@@ -60,13 +67,19 @@ function matchesFilters(
 ): boolean {
   const challengeMatch =
     params.selectedChallenges.length === 0 ||
-    params.selectedChallenges.includes(record.challenge);
+    record.challenge.some((value) =>
+      params.selectedChallenges.includes(value),
+    );
   const industryMatch =
     params.selectedIndustries.length === 0 ||
-    params.selectedIndustries.includes(record.industry);
+    record.industry.some((value) =>
+      params.selectedIndustries.includes(value),
+    );
   const phaseMatch =
     params.selectedPhases.length === 0 ||
-    params.selectedPhases.includes(record.phase);
+    record.phase.some((value) =>
+      params.selectedPhases.includes(value),
+    );
 
   return challengeMatch && industryMatch && phaseMatch;
 }

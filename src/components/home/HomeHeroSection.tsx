@@ -37,13 +37,13 @@ export default function HomeHeroSection() {
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Link
               href="#case-studies"
-              className="inline-flex min-h-14 items-center justify-center rounded-full bg-slate-950 px-8 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_18px_40px_rgba(15,23,42,0.22)]"
+              className="inline-flex min-h-16 items-center justify-center rounded-[1rem] bg-sky-600 px-10 text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-sky-500 hover:shadow-[0_18px_40px_rgba(14,165,233,0.26)]"
             >
               {primaryCta}
             </Link>
             <Link
               href="/client-contact"
-              className="inline-flex min-h-14 items-center justify-center rounded-full border border-slate-300 bg-white/88 px-8 text-sm font-semibold text-slate-900 transition-all hover:-translate-y-0.5 hover:border-slate-950 hover:bg-white hover:shadow-[0_18px_36px_rgba(148,163,184,0.22)]"
+              className="inline-flex min-h-16 items-center justify-center rounded-[1rem] border border-slate-300 bg-white/92 px-10 text-base font-semibold text-slate-900 transition-all hover:-translate-y-0.5 hover:border-slate-950 hover:bg-white hover:shadow-[0_18px_36px_rgba(148,163,184,0.22)]"
             >
               {secondaryCta}
             </Link>
@@ -64,7 +64,7 @@ export default function HomeHeroSection() {
                   </p>
                 </div>
                 <div className="rounded-[1.25rem] bg-white/10 p-4">
-                  <p className="text-3xl font-semibold">20</p>
+                  <p className="text-3xl font-semibold">15</p>
                   <p className="mt-2 text-sm text-slate-300">
                     {metrics.cardsPerPage}
                   </p>

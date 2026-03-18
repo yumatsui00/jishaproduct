@@ -48,6 +48,7 @@ interface HomePageTranslations {
         search: string;
         previous: string;
         next: string;
+        loadMore: string;
       };
       layout: {
         filterPanelEyebrow: string;
@@ -64,6 +65,16 @@ interface HomePageTranslations {
       meta: {
         pageLabel: string;
         totalLabel: string;
+      };
+      notification: {
+        noMoreArticles: string;
+      };
+      selectionBar: {
+        title: string;
+        description: string;
+        requestAppointment: string;
+        minimize: string;
+        restore: string;
       };
       card: {
         viewArticle: string;
@@ -126,7 +137,7 @@ const translations: HomePageTranslations = {
       eyebrow: "Case Studies",
       sectionTitle: "成果で、比較する。",
       sectionDescription:
-        "業界・課題・成果・データ条件で絞り込めます。",
+        "課題・業界・フェーズで実績を絞り込みできます。",
       filters: {
         challenge: "課題",
         industry: "業界",
@@ -136,6 +147,7 @@ const translations: HomePageTranslations = {
         search: "検索する",
         previous: "前の記事",
         next: "次の記事",
+        loadMore: "更に記事を読む",
       },
       layout: {
         filterPanelEyebrow: "Filter View",
@@ -153,6 +165,16 @@ const translations: HomePageTranslations = {
         pageLabel: "ページ",
         totalLabel: "総件数",
       },
+      notification: {
+        noMoreArticles: "これ以上読める記事はありません。",
+      },
+      selectionBar: {
+        title: "選択中の記事",
+        description: "比較した記事について、そのままアポイント希望を送れます。",
+        requestAppointment: "選択した記事投稿者にアポイントを取る",
+        minimize: "縮小する",
+        restore: "元に戻す",
+      },
       card: {
         viewArticle: "記事を見る",
         moreArticle: "もっと見る",
@@ -165,7 +187,7 @@ const translations: HomePageTranslations = {
         duration: "期間",
         outcome: "成果",
         selectLabel: "比較",
-        maxSelectionError: "比較対象は5件まで選択できます。",
+        maxSelectionError: "一度に最大5件まで選択できます。",
       },
     },
   },
