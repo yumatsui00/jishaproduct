@@ -11,8 +11,16 @@ const topBarSource = fs.readFileSync(
   path.join(projectRoot, "src/components/common/PublicTopBar.tsx"),
   "utf8",
 );
-const layoutSource = fs.readFileSync(
-  path.join(projectRoot, "src/app/layout.tsx"),
+const pageTopBarSource = fs.readFileSync(
+  path.join(projectRoot, "src/components/common/PageTopBar.tsx"),
+  "utf8",
+);
+const middlewareSource = fs.readFileSync(
+  path.join(projectRoot, "src/middleware.ts"),
+  "utf8",
+);
+const mockAuthStateSource = fs.readFileSync(
+  path.join(projectRoot, "src/utils/auth/mockAuthState.ts"),
   "utf8",
 );
 const translationsSource = fs.readFileSync(
@@ -32,9 +40,15 @@ test("public top bar renders logo and expected navigation targets", () => {
   assert.match(topBarSource, /<Link[\s\S]*href="\/vendor"/);
 });
 
-test("root layout mounts the public top bar globally", () => {
-  assert.match(layoutSource, /import PublicTopBar from/);
-  assert.match(layoutSource, /<PublicTopBar \/>/);
+test("page top bar switches variants from middleware-backed state", () => {
+  assert.match(pageTopBarSource, /getRequestLoginState/);
+  assert.match(pageTopBarSource, /<TopBar isLoggedIn=\{isLoggedIn\} \/>/);
+});
+
+test("middleware stores the mocked auth state in a request header", () => {
+  assert.match(mockAuthStateSource, /mock-auth-state/);
+  assert.match(mockAuthStateSource, /x-is-logged-in/);
+  assert.match(middlewareSource, /NextResponse\.next/);
 });
 
 test("translation file defines the public top bar label", () => {

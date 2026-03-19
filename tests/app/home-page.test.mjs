@@ -11,6 +11,10 @@ const pageSource = fs.readFileSync(
   path.join(projectRoot, "src/app/page.tsx"),
   "utf8",
 );
+const heroSectionSource = fs.readFileSync(
+  path.join(projectRoot, "src/components/home/HomeHeroSection.tsx"),
+  "utf8",
+);
 const layoutSource = fs.readFileSync(
   path.join(projectRoot, "src/app/layout.tsx"),
   "utf8",
@@ -20,10 +24,19 @@ const translationsSource = fs.readFileSync(
   "utf8",
 );
 
-test("home page uses translation-backed hero content", () => {
-  assert.match(pageSource, /translations\.home\.hero/);
-  assert.match(pageSource, /<h1[\s\S]*\{title\}[\s\S]*<\/h1>/);
-  assert.match(pageSource, /<p[\s\S]*\{description\}[\s\S]*<\/p>/);
+test("home page composes the shared top bar and hero section", () => {
+  assert.match(pageSource, /import PageTopBar from/);
+  assert.match(pageSource, /<PageTopBar \/>/);
+  assert.match(pageSource, /<HomeHeroSection \/>/);
+});
+
+test("home hero section uses translation-backed hero content", () => {
+  assert.match(heroSectionSource, /translations\.home\.hero/);
+  assert.match(heroSectionSource, /<h1[\s\S]*\{title\}[\s\S]*<\/h1>/);
+  assert.match(
+    heroSectionSource,
+    /<p[\s\S]*\{description\}[\s\S]*<\/p>/,
+  );
 });
 
 test("starter template content is removed from the home page", () => {

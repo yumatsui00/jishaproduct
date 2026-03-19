@@ -1,4 +1,5 @@
 import AppointmentPage from "@/components/appointment/AppointmentPage";
+import PageTopBar from "@/components/common/PageTopBar";
 import {
   CASE_STUDY_FILTERS,
 } from "../../../logic/caseStudy/caseStudyRepository";
@@ -26,18 +27,21 @@ export default async function AppointmentRoute(
   );
 
   return (
-    <AppointmentPage
-      selectedCaseStudies={
-        selectionResult.ok ? selectionResult.data : []
-      }
-      selectedArticlesError={
-        selectionResult.ok ||
-        selectionResult.error.code !== "NOT_FOUND"
-          ? undefined
-          : translations.appointment.selectedArticles.error
-      }
-      challengeOptions={CASE_STUDY_FILTERS.challenge}
-      industryOptions={CASE_STUDY_FILTERS.industry}
-    />
+    <>
+      <PageTopBar />
+      <AppointmentPage
+        selectedCaseStudies={
+          selectionResult.ok ? selectionResult.data : []
+        }
+        selectedArticlesError={
+          selectionResult.ok ||
+          selectionResult.error.code !== "NOT_FOUND"
+            ? undefined
+            : translations.appointment.selectedArticles.error
+        }
+        challengeOptions={CASE_STUDY_FILTERS.challenge}
+        industryOptions={CASE_STUDY_FILTERS.industry}
+      />
+    </>
   );
 }

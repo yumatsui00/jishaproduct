@@ -1,6 +1,6 @@
 import PublicFooter from "@/components/common/PublicFooter";
-import PublicTopBar from "@/components/common/PublicTopBar";
 import VendorDownloadForm from "@/components/vendor/VendorDownloadForm";
+import VendorScrollButton from "@/components/vendor/VendorScrollButton";
 import { Button } from "@/components/ui/button";
 import type { VendorFaqItem } from "@/types/vendor";
 import translations from "../../../assets/translations/jp";
@@ -33,7 +33,6 @@ export default function VendorLandingPage() {
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#f4f8ff_38%,#f8fbff_68%,#ffffff_100%)] pt-[4.5rem]">
-      <PublicTopBar />
       <section className="relative overflow-hidden px-6 pb-18 pt-10 sm:px-8 lg:px-10">
         <div className="absolute inset-x-0 top-8 mx-auto h-64 w-[min(76rem,92vw)] rounded-full bg-[radial-gradient(circle,_rgba(251,191,36,0.24),_transparent_54%)] blur-3xl" />
         <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-[radial-gradient(circle,_rgba(14,165,233,0.18),_transparent_68%)] blur-3xl" />
@@ -56,14 +55,12 @@ export default function VendorLandingPage() {
               >
                 {hero.primaryCta}
               </Button>
-              <Button
-                type="button"
+              <VendorScrollButton
+                label={hero.secondaryCta}
                 variant="outline"
                 size="lg"
                 className="h-16 rounded-[1rem] border-slate-300 bg-white/92 px-10 text-base font-semibold text-slate-900 hover:border-slate-950 hover:bg-white"
-              >
-                {hero.secondaryCta}
-              </Button>
+              />
             </div>
           </div>
           <div className="rounded-[2rem] border border-white/70 bg-[linear-gradient(145deg,rgba(255,255,255,0.96),rgba(241,245,249,0.9))] p-6 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-sm">
@@ -346,6 +343,24 @@ export default function VendorLandingPage() {
         </div>
       </section>
 
+      <section className="px-6 py-4 sm:px-8 lg:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-5 sm:flex-row">
+          <Button
+            type="button"
+            size="lg"
+            className="h-18 w-full max-w-md rounded-[1.15rem] bg-sky-600 px-12 text-lg font-semibold text-white hover:bg-sky-500 sm:w-auto sm:min-w-80"
+          >
+            {finalCta.primaryCta}
+          </Button>
+          <VendorScrollButton
+            label={finalCta.secondaryCta}
+            variant="outline"
+            size="lg"
+            className="h-18 w-full max-w-md rounded-[1.15rem] border-slate-300 bg-white px-12 text-lg font-semibold text-slate-900 shadow-[0_20px_45px_rgba(14,165,233,0.14)] hover:border-slate-950 hover:bg-slate-50 sm:w-auto sm:min-w-80"
+          />
+        </div>
+      </section>
+
       <section className="px-6 pb-18 pt-10 sm:px-8 lg:px-10">
         <div className="mx-auto max-w-7xl rounded-[2.2rem] border border-sky-100 bg-[linear-gradient(160deg,#f8fcff_0%,#eef6ff_100%)] p-8 text-slate-950 shadow-[0_32px_80px_rgba(15,23,42,0.10)] lg:p-10">
           <div className="max-w-3xl">
@@ -355,26 +370,12 @@ export default function VendorLandingPage() {
             <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
               {finalCta.title}
             </h2>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Button
-                type="button"
-                size="lg"
-                className="h-16 rounded-[1rem] bg-sky-600 px-10 text-base font-semibold text-white hover:bg-sky-500"
-              >
-                {finalCta.primaryCta}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                className="h-20 rounded-[1.15rem] border-slate-300 bg-white px-12 text-lg font-semibold text-slate-900 shadow-[0_20px_45px_rgba(14,165,233,0.14)] hover:border-slate-950 hover:bg-slate-50"
-              >
-                {finalCta.secondaryCta}
-              </Button>
-            </div>
           </div>
           <div className="mt-10 rounded-[1.8rem] bg-white/96 p-4 text-slate-950 sm:p-6">
-            <div className="mb-6 max-w-2xl">
+            <div
+              id="vendor-download-form-anchor"
+              className="mb-6 max-w-2xl scroll-mt-28"
+            >
               <p className="text-xs font-semibold tracking-[0.18em] text-slate-500 uppercase">
                 {form.eyebrow}
               </p>

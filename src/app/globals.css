@@ -1,14 +1,12 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -125,5 +123,64 @@
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+  }
+}
+
+@keyframes select-content-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--select-enter-x), var(--select-enter-y))
+      scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes select-content-out {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@layer utilities {
+  .select-content-motion {
+    --select-enter-x: 0;
+    --select-enter-y: 0;
+  }
+
+  .select-content-motion[data-side="bottom"] {
+    --select-enter-y: -0.5rem;
+  }
+
+  .select-content-motion[data-side="left"] {
+    --select-enter-x: 0.5rem;
+  }
+
+  .select-content-motion[data-side="right"] {
+    --select-enter-x: -0.5rem;
+  }
+
+  .select-content-motion[data-side="top"] {
+    --select-enter-y: 0.5rem;
+  }
+
+  .select-content-motion[data-state="open"] {
+    animation: select-content-in 0.1s ease-out;
+  }
+
+  .select-content-motion[data-state="closed"] {
+    animation: select-content-out 0.1s ease-in;
+  }
+
+  .select-content-motion[data-align-trigger="true"] {
+    animation: none;
   }
 }
