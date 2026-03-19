@@ -2,42 +2,35 @@
 
 import { useState } from "react";
 
-import AppointmentField from "@/components/appointment/AppointmentField";
+import VendorField from "@/components/vendor/VendorField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
-  AppointmentFormErrors,
-  AppointmentFormValues,
-} from "@/types/caseStudy";
+  VendorDownloadFormErrors,
+  VendorDownloadFormValues,
+} from "@/types/vendor";
 import translations from "../../../assets/translations/jp";
 
-interface AppointmentFormProps {
-  challengeOptions: readonly string[];
-  industryOptions: readonly string[];
-}
-
-const initialFormValues: AppointmentFormValues = {
+const initialFormValues: VendorDownloadFormValues = {
   companyName: "",
   contactName: "",
   jobTitle: "",
   email: "",
   phone: "",
   referralSource: "",
-  industry: "",
-  challenge: "",
-  objective: "",
-  projectStartTiming: "",
-  budget: "",
   details: "",
 };
+
+const fieldOrder: (keyof VendorDownloadFormValues)[] = [
+  "companyName",
+  "contactName",
+  "jobTitle",
+  "email",
+  "phone",
+  "referralSource",
+  "details",
+];
 
 /**
  * Returns whether a string is blank after trimming.
@@ -50,16 +43,16 @@ function isBlank(value: string): boolean {
 }
 
 /**
- * Validates appointment form values before local submission.
+ * Validates vendor download-form values before local submission.
  *
  * @param values Current form values.
  * @returns Field-level validation errors.
  */
 function validateForm(
-  values: AppointmentFormValues,
-): AppointmentFormErrors {
-  const requiredMessage = translations.appointment.validation.required;
-  const errors: AppointmentFormErrors = {};
+  values: VendorDownloadFormValues,
+): VendorDownloadFormErrors {
+  const errors: VendorDownloadFormErrors = {};
+  const requiredMessage = translations.vendor.validation.required;
 
   if (isBlank(values.companyName)) {
     errors.companyName = requiredMessage;
@@ -72,7 +65,7 @@ function validateForm(
   if (isBlank(values.email)) {
     errors.email = requiredMessage;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(values.email.trim())) {
-    errors.email = translations.appointment.validation.email;
+    errors.email = translations.vendor.validation.email;
   }
 
   if (isBlank(values.phone)) {
@@ -83,54 +76,20 @@ function validateForm(
     errors.referralSource = requiredMessage;
   }
 
-  if (isBlank(values.industry)) {
-    errors.industry = requiredMessage;
-  }
-
-  if (isBlank(values.challenge)) {
-    errors.challenge = requiredMessage;
-  }
-
-  if (isBlank(values.objective)) {
-    errors.objective = requiredMessage;
-  }
-
-  if (isBlank(values.details)) {
-    errors.details = requiredMessage;
-  }
-
   return errors;
 }
 
-const fieldOrder: (keyof AppointmentFormValues)[] = [
-  "companyName",
-  "contactName",
-  "jobTitle",
-  "email",
-  "phone",
-  "referralSource",
-  "industry",
-  "challenge",
-  "objective",
-  "projectStartTiming",
-  "budget",
-  "details",
-];
-
 /**
- * Renders the appointment form and local validation state.
+ * Renders the vendor document-download form and local validation state.
  *
- * @param props Select input options.
- * @returns Interactive appointment form.
+ * @returns Interactive vendor download form.
  */
-export default function AppointmentForm(
-  props: AppointmentFormProps,
-) {
-  const labels = translations.appointment.form;
+export default function VendorDownloadForm() {
+  const labels = translations.vendor.form;
   const placeholders = labels.placeholders;
   const [values, setValues] =
-    useState<AppointmentFormValues>(initialFormValues);
-  const [errors, setErrors] = useState<AppointmentFormErrors>({});
+    useState<VendorDownloadFormValues>(initialFormValues);
+  const [errors, setErrors] = useState<VendorDownloadFormErrors>({});
 
   /**
    * Updates one form field value.
@@ -140,7 +99,7 @@ export default function AppointmentForm(
    * @returns Nothing.
    */
   function handleChange(
-    field: keyof AppointmentFormValues,
+    field: keyof VendorDownloadFormValues,
     value: string,
   ) {
     setValues((current) => ({
@@ -154,7 +113,7 @@ export default function AppointmentForm(
   }
 
   /**
-   * Validates the form on submit and blocks invalid submissions.
+   * Validates the form on submit and blocks invalid submission.
    *
    * @param event Submit event from the form.
    * @returns Nothing.
@@ -190,11 +149,12 @@ export default function AppointmentForm(
 
   return (
     <form
+      id="vendor-download-form"
       noValidate
       onSubmit={handleSubmit}
-      className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:grid-cols-2 md:p-8"
+      className="grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:grid-cols-2 md:p-8"
     >
-      <AppointmentField
+      <VendorField
         id="companyName"
         label={labels.companyName}
         required
@@ -210,8 +170,8 @@ export default function AppointmentForm(
             handleChange("companyName", event.target.value)
           }
         />
-      </AppointmentField>
-      <AppointmentField
+      </VendorField>
+      <VendorField
         id="contactName"
         label={labels.contactName}
         required
@@ -227,8 +187,8 @@ export default function AppointmentForm(
             handleChange("contactName", event.target.value)
           }
         />
-      </AppointmentField>
-      <AppointmentField
+      </VendorField>
+      <VendorField
         id="jobTitle"
         label={labels.jobTitle}
         optionalLabel={labels.optional}
@@ -243,8 +203,8 @@ export default function AppointmentForm(
             handleChange("jobTitle", event.target.value)
           }
         />
-      </AppointmentField>
-      <AppointmentField
+      </VendorField>
+      <VendorField
         id="email"
         label={labels.email}
         required
@@ -259,8 +219,8 @@ export default function AppointmentForm(
           value={values.email}
           onChange={(event) => handleChange("email", event.target.value)}
         />
-      </AppointmentField>
-      <AppointmentField
+      </VendorField>
+      <VendorField
         id="phone"
         label={labels.phone}
         required
@@ -275,8 +235,8 @@ export default function AppointmentForm(
           value={values.phone}
           onChange={(event) => handleChange("phone", event.target.value)}
         />
-      </AppointmentField>
-      <AppointmentField
+      </VendorField>
+      <VendorField
         id="referralSource"
         label={labels.referralSource}
         required
@@ -292,114 +252,12 @@ export default function AppointmentForm(
             handleChange("referralSource", event.target.value)
           }
         />
-      </AppointmentField>
-      <AppointmentField
-        id="industry"
-        label={labels.industry}
-        required
-        errorMessage={errors.industry}
-      >
-        <Select
-          value={values.industry}
-          onValueChange={(value) => handleChange("industry", value)}
-        >
-          <SelectTrigger
-            id="industry"
-            aria-invalid={Boolean(errors.industry)}
-            className="rounded-md"
-          >
-            <SelectValue placeholder={placeholders.industry} />
-          </SelectTrigger>
-          <SelectContent>
-            {props.industryOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </AppointmentField>
-      <AppointmentField
-        id="challenge"
-        label={labels.challenge}
-        required
-        errorMessage={errors.challenge}
-      >
-        <Select
-          value={values.challenge}
-          onValueChange={(value) => handleChange("challenge", value)}
-        >
-          <SelectTrigger
-            id="challenge"
-            aria-invalid={Boolean(errors.challenge)}
-            className="rounded-md"
-          >
-            <SelectValue placeholder={placeholders.challenge} />
-          </SelectTrigger>
-          <SelectContent>
-            {props.challengeOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </AppointmentField>
+      </VendorField>
       <div className="md:col-span-2">
-        <AppointmentField
-          id="objective"
-          label={labels.objective}
-          required
-          errorMessage={errors.objective}
-        >
-          <Textarea
-            id="objective"
-            name="objective"
-            aria-invalid={Boolean(errors.objective)}
-            placeholder={placeholders.objective}
-            value={values.objective}
-            onChange={(event) =>
-              handleChange("objective", event.target.value)
-            }
-            className="min-h-28"
-          />
-        </AppointmentField>
-      </div>
-      <AppointmentField
-        id="projectStartTiming"
-        label={labels.projectStartTiming}
-        optionalLabel={labels.optional}
-      >
-        <Input
-          id="projectStartTiming"
-          name="projectStartTiming"
-          aria-invalid={Boolean(errors.projectStartTiming)}
-          placeholder={placeholders.projectStartTiming}
-          value={values.projectStartTiming}
-          onChange={(event) =>
-            handleChange("projectStartTiming", event.target.value)
-          }
-        />
-      </AppointmentField>
-      <AppointmentField
-        id="budget"
-        label={labels.budget}
-        optionalLabel={labels.optional}
-      >
-        <Input
-          id="budget"
-          name="budget"
-          aria-invalid={Boolean(errors.budget)}
-          placeholder={placeholders.budget}
-          value={values.budget}
-          onChange={(event) => handleChange("budget", event.target.value)}
-        />
-      </AppointmentField>
-      <div className="md:col-span-2">
-        <AppointmentField
+        <VendorField
           id="details"
           label={labels.details}
-          required
+          optionalLabel={labels.optional}
           errorMessage={errors.details}
         >
           <Textarea
@@ -411,16 +269,15 @@ export default function AppointmentForm(
             onChange={(event) =>
               handleChange("details", event.target.value)
             }
-            className="min-h-36"
+            className="min-h-32"
           />
-        </AppointmentField>
+        </VendorField>
       </div>
       <div className="md:col-span-2 flex justify-center">
         <Button
           type="submit"
-          variant="outline"
           size="lg"
-          className="h-12 rounded-md bg-white px-10 text-sm"
+          className="h-12 rounded-[1rem] bg-sky-600 px-8 text-sm font-semibold text-white hover:bg-sky-500"
         >
           {labels.submit}
         </Button>
