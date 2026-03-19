@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import TopBar from "@/components/common/TopBar";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,12 +25,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isLoggedIn = true;
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="min-h-screen bg-background text-foreground">{children}</div>
+        <div className="min-h-screen bg-background text-foreground">
+          <TopBar isLoggedIn={isLoggedIn} />
+          {children}
+        </div>
       </body>
     </html>
   );

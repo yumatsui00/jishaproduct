@@ -393,6 +393,7 @@ export default function CaseStudySection() {
       <SelectionActionBar
         open={selectionState.selectedIds.length > 0}
         selectedCount={selectionState.selectedIds.length}
+        selectedIds={selectionState.selectedIds}
       />
       <div className="mx-auto w-full max-w-7xl">
         <div className="max-w-3xl">

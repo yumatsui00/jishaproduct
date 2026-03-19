@@ -116,3 +116,32 @@ export async function getCaseStudyRecords(): Promise<
     };
   }
 }
+
+/**
+ * Loads case-study records by id while preserving the requested order.
+ *
+ * @param ids Requested case-study ids.
+ * @returns Matching case-study records or an IO error result.
+ */
+export async function getCaseStudyRecordsByIds(
+  ids: string[],
+): Promise<Result<CaseStudyRecord[]>> {
+  const recordsResult = await getCaseStudyRecords();
+
+  if (!recordsResult.ok) {
+    return recordsResult;
+  }
+
+  const recordsById = new Map(
+    recordsResult.data.map((record) => [record.id, record]),
+  );
+
+  return {
+    ok: true,
+    data: ids.flatMap((id) => {
+      const record = recordsById.get(id);
+
+      return record ? [record] : [];
+    }),
+  };
+}
