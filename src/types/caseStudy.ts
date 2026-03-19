@@ -72,3 +72,41 @@ export interface CaseStudyListResponse {
   totalPages: number;
   availableFilters: CaseStudyFilterGroups;
 }
+
+export interface AppointmentSelectedCaseStudy {
+  id: string;
+  companyName: string;
+  serviceName: string;
+  imageSrc: string;
+  imageAlt: string;
+}
+
+export interface AppointmentFormValues {
+  companyName: string;
+  contactName: string;
+  jobTitle: string;
+  email: string;
+  phone: string;
+  referralSource: string;
+  industry: string;
+  challenge: string;
+  objective: string;
+  projectStartTiming: string;
+  budget: string;
+  details: string;
+}
+
+export interface AppointmentFormErrors {
+  companyName?: string;
+  contactName?: string;
+  jobTitle?: string;
+  email?: string;
+  phone?: string;
+  referralSource?: string;
+  industry?: string;
+  challenge?: string;
+  objective?: string;
+  projectStartTiming?: string;
+  budget?: string;
+  details?: string;
+}

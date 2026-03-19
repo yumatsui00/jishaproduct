@@ -1,8 +1,13 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 import translations from "../../../assets/translations/jp";
 
 interface SelectionActionBarProps {
   open: boolean;
   selectedCount: number;
+  selectedIds: string[];
 }
 
 /**
@@ -14,10 +19,26 @@ interface SelectionActionBarProps {
 export default function SelectionActionBar(
   props: SelectionActionBarProps,
 ) {
+  const router = useRouter();
   const labels = translations.home.caseStudies.selectionBar;
   const actionLabel = `${labels.requestAppointment} (${props.selectedCount})`;
   const selectionLabel = `${props.selectedCount}件${translations.home.caseStudies.layout.selectedCountLabel}`;
   const maxSelectionLabel = `*${translations.home.caseStudies.card.maxSelectionError}`;
+
+  /**
+   * Navigates to the appointment page with the current selection.
+   *
+   * @returns Nothing.
+   */
+  function handleRequestAppointment() {
+    if (props.selectedIds.length === 0) {
+      return;
+    }
+
+    router.push(
+      `/appointment?ids=${props.selectedIds.join(",")}`,
+    );
+  }
 
   return (
     <div
@@ -40,6 +61,7 @@ export default function SelectionActionBar(
             <button
               type="button"
               aria-label={actionLabel}
+              onClick={handleRequestAppointment}
               className="inline-flex min-h-16 items-center justify-center rounded-none bg-sky-600 px-10 text-base font-semibold text-white transition-colors hover:bg-sky-500"
             >
               {labels.requestAppointment}
