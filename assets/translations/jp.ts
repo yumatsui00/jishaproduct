@@ -2,6 +2,15 @@ interface HomePageTranslations {
   common: {
     topBar: {
       vendorLinkLabel: string;
+      postArticleLabel: string;
+      notificationsLabel: string;
+      userMenu: {
+        openLabel: string;
+        companyLabel: string;
+        companyName: string;
+        settingsLabel: string;
+        logoutLabel: string;
+      };
     };
     footer: {
       logoAlt: string;
@@ -143,6 +152,15 @@ const translations: HomePageTranslations = {
   common: {
     topBar: {
       vendorLinkLabel: "ベンダーの方はこちら",
+      postArticleLabel: "記事投稿",
+      notificationsLabel: "通知",
+      userMenu: {
+        openLabel: "ユーザーメニューを開く",
+        companyLabel: "Company",
+        companyName: "株式会社Jisha",
+        settingsLabel: "設定",
+        logoutLabel: "ログアウト",
+      },
     },
     footer: {
       logoAlt: "Jisha footer logo",
