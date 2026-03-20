@@ -135,6 +135,41 @@ interface HomePageTranslations {
     validation: {
       required: string;
       email: string;
+      scheduleRequired: string;
+      scheduleMinimumDays: string;
+      scheduleMinimumHours: string;
+      scheduleCombined: string;
+    };
+    schedule: {
+      label: string;
+      helper: string;
+      trigger: {
+        open: string;
+        edit: string;
+        empty: string;
+        selected: string;
+        selectedDatesLabel: string;
+      };
+      sheet: {
+        title: string;
+        description: string;
+        close: string;
+        previousWeek: string;
+        nextWeek: string;
+      };
+      requirement: {
+        title: string;
+        days: string;
+        hours: string;
+        progressDays: string;
+        progressHours: string;
+      };
+      calendar: {
+        allDay: string;
+        unavailable: string;
+        selected: string;
+        removeBlock: string;
+      };
     };
   };
   vendor: {
@@ -437,6 +472,44 @@ const translations: HomePageTranslations = {
     validation: {
       required: "必須項目です。",
       email: "メールアドレスの形式が正しくありません。",
+      scheduleRequired: "候補日時を選択してください。",
+      scheduleMinimumDays: "候補日時は{days}日以上選択してください。",
+      scheduleMinimumHours: "候補日時は合計{hours}時間以上選択してください。",
+      scheduleCombined:
+        "候補日時は{days}日以上、合計{hours}時間以上選択してください。",
+    },
+    schedule: {
+      label: "日程候補",
+      helper:
+        "選択した記事数に応じて、必要な日数と合計時間を満たす候補日時を選択してください。",
+      trigger: {
+        open: "候補日時を選択する",
+        edit: "候補日時を編集する",
+        empty: "未選択",
+        selected: "{days}日 / {hours}時間を選択済み",
+        selectedDatesLabel: "選択済み日程",
+      },
+      sheet: {
+        title: "候補日時を選択",
+        description:
+          "現在時刻から24時間以降、15日以内の8:00〜20:00から選択できます。",
+        close: "閉じる",
+        previousWeek: "前の週",
+        nextWeek: "次の週",
+      },
+      requirement: {
+        title: "必要な候補日時",
+        days: "{days}日以上",
+        hours: "合計{hours}時間以上",
+        progressDays: "選択済み日数: {days}日",
+        progressHours: "選択済み時間: {hours}時間",
+      },
+      calendar: {
+        allDay: "終日選択",
+        unavailable: "選択不可",
+        selected: "選択中",
+        removeBlock: "候補枠を削除",
+      },
     },
   },
   vendor: {
