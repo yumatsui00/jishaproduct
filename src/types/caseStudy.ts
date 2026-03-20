@@ -94,6 +94,7 @@ export interface AppointmentFormValues {
   projectStartTiming: string;
   budget: string;
   details: string;
+  scheduleSelection: AppointmentScheduleSelection;
 }
 
 export interface AppointmentFormErrors {
@@ -109,4 +110,19 @@ export interface AppointmentFormErrors {
   projectStartTiming?: string;
   budget?: string;
   details?: string;
+  scheduleSelection?: string;
+}
+
+export interface AppointmentScheduleSlot {
+  startAt: string;
+  endAt: string;
+}
+
+export interface AppointmentScheduleSelection {
+  slots: AppointmentScheduleSlot[];
+}
+
+export interface AppointmentScheduleRequirement {
+  minimumDays: number;
+  minimumHours: number;
 }
