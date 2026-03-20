@@ -67,6 +67,11 @@ interface AppointmentTextareaFieldProps {
   onChange: (value: string) => void;
 }
 
+interface AppointmentScheduleDraft {
+  anchorStartAt: string;
+  currentEndAt: string;
+}
+
 const HOUR_IN_MS = 60 * 60 * 1000;
 const HALF_HOUR_IN_MS = 30 * 60 * 1000;
 const DAY_IN_MS = 24 * HOUR_IN_MS;
@@ -211,6 +216,59 @@ function normalizeSlots(
   return [...uniqueSlots.values()].sort((left, right) =>
     left.startAt.localeCompare(right.startAt),
   );
+}
+
+/**
+ * Returns whether two dates fall on the same local day.
+ *
+ * @param left Left date.
+ * @param right Right date.
+ * @returns True when both dates share the same local day.
+ */
+function isSameLocalDay(left: Date, right: Date): boolean {
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
+}
+
+/**
+ * Builds all 30-minute slots between the provided boundaries.
+ *
+ * @param startAt Inclusive start.
+ * @param endAt Inclusive end.
+ * @returns Consecutive schedule slots.
+ */
+function buildSlotRange(
+  startAt: Date,
+  endAt: Date,
+): AppointmentScheduleSlot[] {
+  const slots: AppointmentScheduleSlot[] = [];
+
+  for (
+    let current = new Date(startAt);
+    current <= endAt;
+    current = new Date(current.getTime() + HALF_HOUR_IN_MS)
+  ) {
+    slots.push(createScheduleSlot(current));
+  }
+
+  return slots;
+}
+
+/**
+ * Orders two dates from earlier to later.
+ *
+ * @param first First boundary.
+ * @param second Second boundary.
+ * @returns Ordered range tuple.
+ */
+function getOrderedRange(
+  first: Date,
+  second: Date,
+): [Date, Date] {
+  return first <= second ? [first, second] : [second, first];
 }
 
 /**
@@ -518,41 +576,43 @@ export default function AppointmentForm(
     () => new Date(currentTime.getTime() + DAY_IN_MS),
     [currentTime],
   );
-  const maxSelectableAt = useMemo(
-    () => new Date(currentTime.getTime() + 15 * DAY_IN_MS),
-    [currentTime],
-  );
+  const maxSelectableAt = useMemo(() => {
+    const maxDay = new Date(currentTime.getTime() + 15 * DAY_IN_MS);
+
+    return new Date(
+      maxDay.getFullYear(),
+      maxDay.getMonth(),
+      maxDay.getDate(),
+      LAST_HOUR,
+      0,
+      0,
+      0,
+    );
+  }, [currentTime]);
   const [values, setValues] =
     useState<AppointmentFormValues>(initialFormValues);
   const [errors, setErrors] = useState<AppointmentFormErrors>({});
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
-  const [draggingMode, setDraggingMode] = useState<
-    "select" | "remove" | null
-  >(null);
+  const [scheduleDraft, setScheduleDraft] =
+    useState<AppointmentScheduleDraft | null>(null);
   const [weekStart, setWeekStart] = useState(() =>
     startOfDay(currentTime),
   );
-
-  useEffect(() => {
-    function handlePointerUp() {
-      setDraggingMode(null);
+  const draftSlots = useMemo(() => {
+    if (!scheduleDraft) {
+      return [];
     }
 
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsScheduleOpen(false);
-        setDraggingMode(null);
-      }
-    }
+    const [rangeStartAt, rangeEndAt] = getOrderedRange(
+      new Date(scheduleDraft.anchorStartAt),
+      new Date(scheduleDraft.currentEndAt),
+    );
 
-    window.addEventListener("pointerup", handlePointerUp);
-    window.addEventListener("keydown", handleEscape);
-
-    return () => {
-      window.removeEventListener("pointerup", handlePointerUp);
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, []);
+    return buildSlotRange(
+      rangeStartAt,
+      rangeEndAt,
+    );
+  }, [scheduleDraft]);
 
   /**
    * Updates one form field value.
@@ -601,60 +661,122 @@ export default function AppointmentForm(
     }));
   }
 
+  useEffect(() => {
+    function handlePointerUp() {
+      if (!scheduleDraft) {
+        return;
+      }
+
+      updateScheduleSelection((currentSelection) => ({
+        slots: (() => {
+          const [rangeStartAt, rangeEndAt] = getOrderedRange(
+            new Date(scheduleDraft.anchorStartAt),
+            new Date(scheduleDraft.currentEndAt),
+          );
+
+          return normalizeSlots([
+            ...currentSelection.slots,
+            ...buildSlotRange(rangeStartAt, rangeEndAt),
+          ]);
+        })(),
+      }));
+      setScheduleDraft(null);
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsScheduleOpen(false);
+        setScheduleDraft(null);
+      }
+    }
+
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [scheduleDraft]);
+
   /**
-   * Applies one slot change during click or drag selection.
+   * Starts a new draft block from the provided slot.
    *
    * @param startAt Slot start time.
-   * @param mode Selection mode.
    * @returns Nothing.
    */
-  function applySlot(
-    startAt: Date,
-    mode: "select" | "remove",
-  ) {
-    updateScheduleSelection((currentSelection) => ({
-      slots: ((currentSlots) => {
-        const nextSlot = createScheduleSlot(startAt);
+  function startScheduleDraft(startAt: Date) {
+    const anchorStartAt = startAt.toISOString();
 
-        if (mode === "select") {
-          return normalizeSlots([...currentSlots, nextSlot]);
-        }
-
-        return currentSlots.filter(
-          (slot) => slot.startAt !== nextSlot.startAt,
-        );
-      })(currentSelection.slots),
-    }));
+    setScheduleDraft({
+      anchorStartAt,
+      currentEndAt: anchorStartAt,
+    });
   }
 
   /**
-   * Handles starting pointer-based slot selection.
+   * Handles starting pointer-based block selection.
    *
    * @param startAt Slot start time.
-   * @param isSelected Whether the slot is already selected.
    * @returns Nothing.
    */
-  function handleSchedulePointerStart(
-    startAt: Date,
-    isSelected: boolean,
-  ) {
-    const mode = isSelected ? "remove" : "select";
-    setDraggingMode(mode);
-    applySlot(startAt, mode);
+  function handleSchedulePointerStart(startAt: Date) {
+    startScheduleDraft(startAt);
   }
 
   /**
-   * Handles pointer entry while dragging across the schedule grid.
+   * Updates the draft block while dragging across the schedule grid.
    *
    * @param startAt Slot start time.
    * @returns Nothing.
    */
   function handleSchedulePointerEnter(startAt: Date) {
-    if (!draggingMode) {
+    if (!scheduleDraft) {
       return;
     }
 
-    applySlot(startAt, draggingMode);
+    const anchorDate = new Date(scheduleDraft.anchorStartAt);
+
+    if (!isSameLocalDay(anchorDate, startAt)) {
+      return;
+    }
+
+    setScheduleDraft((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        currentEndAt: startAt.toISOString(),
+      };
+    });
+  }
+
+  /**
+   * Removes one rendered block from the current schedule selection.
+   *
+   * @param startAt Block start time.
+   * @param endAt Block end time.
+   * @returns Nothing.
+   */
+  function handleRemoveBlock(
+    startAt: string,
+    endAt: string,
+  ) {
+    const blockStartAt = new Date(startAt).getTime();
+    const blockEndAt = new Date(endAt).getTime();
+
+    updateScheduleSelection((currentSelection) => ({
+      slots: currentSelection.slots.filter((slot) => {
+        const slotStartAt = new Date(slot.startAt).getTime();
+
+        return (
+          slotStartAt < blockStartAt ||
+          slotStartAt >= blockEndAt
+        );
+      }),
+    }));
   }
 
   /**
@@ -904,12 +1026,12 @@ export default function AppointmentForm(
           minSelectableAt={minSelectableAt}
           maxSelectableAt={maxSelectableAt}
           selectedSlots={values.scheduleSelection.slots}
-          draggingMode={draggingMode}
+          draftSlots={draftSlots}
           canGoPrevious={canGoPrevious}
           canGoNext={canGoNext}
           onClose={() => {
             setIsScheduleOpen(false);
-            setDraggingMode(null);
+            setScheduleDraft(null);
           }}
           onPreviousWeek={() => {
             setWeekStart(
@@ -925,8 +1047,9 @@ export default function AppointmentForm(
           }}
           onPointerStart={handleSchedulePointerStart}
           onPointerEnter={handleSchedulePointerEnter}
-          onPointerEnd={() => setDraggingMode(null)}
+          onPointerEnd={() => undefined}
           onAllDayToggle={handleAllDayToggle}
+          onRemoveBlock={handleRemoveBlock}
         />
       ) : null}
     </>

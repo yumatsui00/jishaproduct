@@ -148,6 +148,7 @@ interface HomePageTranslations {
         edit: string;
         empty: string;
         selected: string;
+        selectedDatesLabel: string;
       };
       sheet: {
         title: string;
@@ -167,6 +168,7 @@ interface HomePageTranslations {
         allDay: string;
         unavailable: string;
         selected: string;
+        removeBlock: string;
       };
     };
   };
@@ -506,6 +508,7 @@ const translations: HomePageTranslations = {
         allDay: "終日選択",
         unavailable: "選択不可",
         selected: "選択中",
+        removeBlock: "候補枠を削除",
       },
     },
   },

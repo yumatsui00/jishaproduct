@@ -13,16 +13,17 @@ interface AppointmentScheduleSheetProps {
   minSelectableAt: Date;
   maxSelectableAt: Date;
   selectedSlots: AppointmentScheduleSlot[];
-  draggingMode: "select" | "remove" | null;
+  draftSlots: AppointmentScheduleSlot[];
   canGoPrevious: boolean;
   canGoNext: boolean;
   onClose: () => void;
   onPreviousWeek: () => void;
   onNextWeek: () => void;
-  onPointerStart: (startAt: Date, isSelected: boolean) => void;
+  onPointerStart: (startAt: Date) => void;
   onPointerEnter: (startAt: Date) => void;
   onPointerEnd: () => void;
   onAllDayToggle: (dayStart: Date) => void;
+  onRemoveBlock: (startAt: string, endAt: string) => void;
 }
 
 /**
@@ -109,11 +110,12 @@ export default function AppointmentScheduleSheet(
             minSelectableAt={props.minSelectableAt}
             maxSelectableAt={props.maxSelectableAt}
             selectedSlots={props.selectedSlots}
-            draggingMode={props.draggingMode}
+            draftSlots={props.draftSlots}
             onPointerStart={props.onPointerStart}
             onPointerEnter={props.onPointerEnter}
             onPointerEnd={props.onPointerEnd}
             onAllDayToggle={props.onAllDayToggle}
+            onRemoveBlock={props.onRemoveBlock}
           />
         </div>
       </div>
