@@ -1,3 +1,4 @@
+import PageTopBar from "@/components/common/PageTopBar";
 import VendorLandingPage from "@/components/vendor/VendorLandingPage";
 
 /**
@@ -6,5 +7,10 @@ import VendorLandingPage from "@/components/vendor/VendorLandingPage";
  * @returns Vendor landing page.
  */
 export default function VendorPage() {
-  return <VendorLandingPage />;
+  return (
+    <>
+      <PageTopBar />
+      <VendorLandingPage />
+    </>
+  );
 }

@@ -152,7 +152,7 @@ export default function VendorDownloadForm() {
       id="vendor-download-form"
       noValidate
       onSubmit={handleSubmit}
-      className="grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:grid-cols-2 md:p-8"
+      className="scroll-mt-28 grid gap-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:grid-cols-2 md:p-8"
     >
       <VendorField
         id="companyName"

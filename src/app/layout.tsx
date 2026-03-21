@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 
-import TopBar from "@/components/common/TopBar";
-
 import "./globals.css";
 
 export const metadata: Metadata = {
