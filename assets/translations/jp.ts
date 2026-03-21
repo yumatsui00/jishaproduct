@@ -4,10 +4,22 @@ interface HomePageTranslations {
       vendorLinkLabel: string;
       postArticleLabel: string;
       notificationsLabel: string;
+      notificationsMenu: {
+        items: [
+          string,
+          string,
+          string,
+          string,
+          string,
+        ];
+        viewAllLabel: string;
+      };
       userMenu: {
         openLabel: string;
         companyLabel: string;
         companyName: string;
+        myArticlesLabel: string;
+        invoicesLabel: string;
         settingsLabel: string;
         logoutLabel: string;
       };
@@ -338,6 +350,20 @@ interface HomePageTranslations {
       email: string;
     };
   };
+  pages: {
+    notifications: {
+      title: string;
+    };
+    settings: {
+      title: string;
+    };
+    invoices: {
+      title: string;
+    };
+    myArticles: {
+      title: string;
+    };
+  };
 }
 
 const translations: HomePageTranslations = {
@@ -346,10 +372,22 @@ const translations: HomePageTranslations = {
       vendorLinkLabel: "ベンダーの方はこちら",
       postArticleLabel: "記事投稿",
       notificationsLabel: "通知",
+      notificationsMenu: {
+        items: [
+          "新しいメッセージがあります",
+          "請求書の確認依頼があります",
+          "記事に新しいリアクションが付きました",
+          "設定更新のお知らせがあります",
+          "マイ記事の閲覧数が更新されました",
+        ],
+        viewAllLabel: "すべての通知を見る",
+      },
       userMenu: {
         openLabel: "ユーザーメニューを開く",
         companyLabel: "Company",
         companyName: "株式会社Jisha",
+        myArticlesLabel: "自分の記事",
+        invoicesLabel: "請求書",
         settingsLabel: "設定",
         logoutLabel: "ログアウト",
       },
@@ -694,6 +732,20 @@ const translations: HomePageTranslations = {
     validation: {
       required: "必須項目です。",
       email: "メールアドレスの形式が正しくありません。",
+    },
+  },
+  pages: {
+    notifications: {
+      title: "Notifications",
+    },
+    settings: {
+      title: "Settings",
+    },
+    invoices: {
+      title: "Invoices",
+    },
+    myArticles: {
+      title: "My Articles",
     },
   },
 };

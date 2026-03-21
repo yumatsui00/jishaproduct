@@ -2,7 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, LogOut, Settings, SquarePen, UserCircle2 } from "lucide-react";
+import {
+  Bell,
+  FileText,
+  LogOut,
+  ReceiptText,
+  Settings,
+  SquarePen,
+  UserCircle2,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +19,11 @@ import translations from "../../../assets/translations/jp";
 
 interface AuthenticatedTopBarProps {
   companyName: string;
+}
+
+interface TopBarNotificationItem {
+  id: string;
+  label: string;
 }
 
 /**
@@ -23,26 +36,43 @@ interface AuthenticatedTopBarProps {
 export default function AuthenticatedTopBar({
   companyName,
 }: AuthenticatedTopBarProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] =
+    useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const notificationContainerRef = useRef<HTMLDivElement>(null);
   const menuContainerRef = useRef<HTMLDivElement>(null);
   const labels = translations.common.topBar;
+  const notificationItems: TopBarNotificationItem[] =
+    labels.notificationsMenu.items.map((label, index) => ({
+      id: `notification-${index + 1}`,
+      label,
+    }));
 
   useEffect(() => {
-    if (!isMenuOpen) {
+    if (!isNotificationMenuOpen && !isUserMenuOpen) {
       return;
     }
 
     /**
-     * Closes the menu when a pointer event happens outside the menu area.
+     * Closes dialogs when a pointer event happens outside their area.
      *
      * @param event - The pointer event from the document.
      */
     function handlePointerDown(event: PointerEvent) {
+      const target = event.target as Node;
+
+      if (
+        notificationContainerRef.current &&
+        !notificationContainerRef.current.contains(target)
+      ) {
+        setIsNotificationMenuOpen(false);
+      }
+
       if (
         menuContainerRef.current &&
-        !menuContainerRef.current.contains(event.target as Node)
+        !menuContainerRef.current.contains(target)
       ) {
-        setIsMenuOpen(false);
+        setIsUserMenuOpen(false);
       }
     }
 
@@ -51,7 +81,7 @@ export default function AuthenticatedTopBar({
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
     };
-  }, [isMenuOpen]);
+  }, [isNotificationMenuOpen, isUserMenuOpen]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-black/6 bg-white/68 backdrop-blur-md">
@@ -67,30 +97,67 @@ export default function AuthenticatedTopBar({
           />
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="rounded-full text-slate-700 hover:bg-slate-100"
-            aria-label={labels.notificationsLabel}
-          >
-            <Bell className="size-5" />
-          </Button>
+          <div ref={notificationContainerRef} className="relative">
+            <div className="relative inline-flex">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="rounded-full text-slate-700 hover:bg-slate-100"
+                aria-expanded={isNotificationMenuOpen}
+                aria-label={labels.notificationsLabel}
+                onClick={() => {
+                  setIsNotificationMenuOpen((open) => !open);
+                  setIsUserMenuOpen(false);
+                }}
+              >
+                <Bell className="size-5" />
+              </Button>
+              <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-red-500" />
+            </div>
+            {isNotificationMenuOpen ? (
+              <div className="absolute right-0 top-[calc(100%+0.75rem)] w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
+                <div className="flex flex-col">
+                  {notificationItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 last:border-b-0"
+                    >
+                      {item.label}
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="mt-2 w-full justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+                >
+                  <Link href="/notifications">
+                    {labels.notificationsMenu.viewAllLabel}
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
+          </div>
           <div ref={menuContainerRef} className="relative">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="rounded-full text-slate-700 hover:bg-slate-100"
-              aria-expanded={isMenuOpen}
-              aria-label={labels.userMenu.openLabel}
-              onClick={() => {
-                setIsMenuOpen((open) => !open);
-              }}
-            >
-              <UserCircle2 className="size-6" />
-            </Button>
-            {isMenuOpen ? (
+            <div className="relative inline-flex">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="rounded-full text-slate-700 hover:bg-slate-100"
+                aria-expanded={isUserMenuOpen}
+                aria-label={labels.userMenu.openLabel}
+                onClick={() => {
+                  setIsUserMenuOpen((open) => !open);
+                  setIsNotificationMenuOpen(false);
+                }}
+              >
+                <UserCircle2 className="size-6" />
+              </Button>
+              <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-red-500" />
+            </div>
+            {isUserMenuOpen ? (
               <div className="absolute right-0 top-[calc(100%+0.75rem)] w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
                 <div className="border-b border-slate-100 px-2 pb-3">
                   <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
@@ -102,12 +169,34 @@ export default function AuthenticatedTopBar({
                 </div>
                 <div className="mt-3 flex flex-col gap-1">
                   <Button
-                    type="button"
+                    asChild
                     variant="ghost"
                     className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
                   >
-                    <Settings className="size-4" />
-                    {labels.userMenu.settingsLabel}
+                    <Link href="/my-articles">
+                      <FileText className="size-4" />
+                      {labels.userMenu.myArticlesLabel}
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+                  >
+                    <Link href="/invoices">
+                      <ReceiptText className="size-4" />
+                      {labels.userMenu.invoicesLabel}
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+                  >
+                    <Link href="/settings">
+                      <Settings className="size-4" />
+                      {labels.userMenu.settingsLabel}
+                    </Link>
                   </Button>
                   <Button
                     type="button"
