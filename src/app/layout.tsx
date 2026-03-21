@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import TopBar from "@/components/common/TopBar";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,6 +14,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isLoggedIn = true;
+
   return (
     <html lang="en">
       <body className="antialiased">

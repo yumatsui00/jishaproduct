@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import AppointmentForm from "@/components/appointment/AppointmentForm";
-import PublicTopBar from "@/components/common/PublicTopBar";
 import type { AppointmentSelectedCaseStudy } from "@/types/caseStudy";
 import translations from "../../../assets/translations/jp";
 
@@ -86,7 +85,6 @@ export default function AppointmentPage(
 
   return (
     <main className="min-h-screen bg-[#fff9e8] pt-[4.5rem]">
-      <PublicTopBar />
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 md:py-16">
         <div className="max-w-3xl space-y-3">
           <h1 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-5xl">
