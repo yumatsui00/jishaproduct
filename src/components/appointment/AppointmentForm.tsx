@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import AppointmentField from "@/components/appointment/AppointmentField";
+import AppointmentScheduleRequirement from "@/components/appointment/AppointmentScheduleRequirement";
+import AppointmentScheduleSheet from "@/components/appointment/AppointmentScheduleSheet";
+import AppointmentScheduleTrigger from "@/components/appointment/AppointmentScheduleTrigger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,13 +19,64 @@ import { Textarea } from "@/components/ui/textarea";
 import type {
   AppointmentFormErrors,
   AppointmentFormValues,
+  AppointmentScheduleRequirement as AppointmentScheduleRequirementType,
+  AppointmentScheduleSelection,
+  AppointmentScheduleSlot,
 } from "@/types/caseStudy";
 import translations from "../../../assets/translations/jp";
 
 interface AppointmentFormProps {
+  selectedArticleCount: number;
   challengeOptions: readonly string[];
   industryOptions: readonly string[];
 }
+
+interface AppointmentInputFieldProps {
+  id: keyof AppointmentFormValues;
+  label: string;
+  placeholder: string;
+  value: string;
+  errorMessage?: string;
+  required?: boolean;
+  optionalLabel?: string;
+  type?: "email" | "tel" | "text";
+  onChange: (value: string) => void;
+}
+
+interface AppointmentSelectFieldProps {
+  id: keyof AppointmentFormValues;
+  label: string;
+  placeholder: string;
+  value: string;
+  options: readonly string[];
+  errorMessage?: string;
+  required?: boolean;
+  optionalLabel?: string;
+  onChange: (value: string) => void;
+}
+
+interface AppointmentTextareaFieldProps {
+  id: keyof AppointmentFormValues;
+  label: string;
+  placeholder: string;
+  value: string;
+  errorMessage?: string;
+  required?: boolean;
+  optionalLabel?: string;
+  className?: string;
+  onChange: (value: string) => void;
+}
+
+interface AppointmentScheduleDraft {
+  anchorStartAt: string;
+  currentEndAt: string;
+}
+
+const HOUR_IN_MS = 60 * 60 * 1000;
+const HALF_HOUR_IN_MS = 30 * 60 * 1000;
+const DAY_IN_MS = 24 * HOUR_IN_MS;
+const FIRST_HOUR = 8;
+const LAST_HOUR = 20;
 
 const initialFormValues: AppointmentFormValues = {
   companyName: "",
@@ -37,6 +91,9 @@ const initialFormValues: AppointmentFormValues = {
   projectStartTiming: "",
   budget: "",
   details: "",
+  scheduleSelection: {
+    slots: [],
+  },
 };
 
 /**
@@ -50,15 +107,242 @@ function isBlank(value: string): boolean {
 }
 
 /**
+ * Replaces placeholders in translation text.
+ *
+ * @param template Source translation string.
+ * @param replacements Placeholder values.
+ * @returns Formatted string.
+ */
+function formatTemplate(
+  template: string,
+  replacements: Record<string, number>,
+): string {
+  return Object.entries(replacements).reduce(
+    (result, [key, value]) =>
+      result.replace(`{${key}}`, String(value)),
+    template,
+  );
+}
+
+/**
+ * Returns the local start of the provided day.
+ *
+ * @param value Source date.
+ * @returns Local day start.
+ */
+function startOfDay(value: Date): Date {
+  return new Date(
+    value.getFullYear(),
+    value.getMonth(),
+    value.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+}
+
+/**
+ * Builds a local schedule slot for the provided 30-minute boundary.
+ *
+ * @param startAt Slot start date.
+ * @returns One-hour schedule slot.
+ */
+function createScheduleSlot(
+  startAt: Date,
+): AppointmentScheduleSlot {
+  return {
+    startAt: startAt.toISOString(),
+    endAt: new Date(startAt.getTime() + HALF_HOUR_IN_MS).toISOString(),
+  };
+}
+
+/**
+ * Returns the requirement for the selected article count.
+ *
+ * @param selectedArticleCount Number of selected articles.
+ * @returns Required minimum days and hours.
+ */
+function getScheduleRequirement(
+  selectedArticleCount: number,
+): AppointmentScheduleRequirementType {
+  if (selectedArticleCount >= 4) {
+    return {
+      minimumDays: 4,
+      minimumHours: 15,
+    };
+  }
+
+  if (selectedArticleCount >= 2) {
+    return {
+      minimumDays: 3,
+      minimumHours: 10,
+    };
+  }
+
+  return {
+    minimumDays: 2,
+    minimumHours: 5,
+  };
+}
+
+/**
+ * Returns the number of distinct selected local days.
+ *
+ * @param slots Selected schedule slots.
+ * @returns Distinct day count.
+ */
+function countSelectedDays(
+  slots: AppointmentScheduleSlot[],
+): number {
+  return new Set(
+    slots.map((slot) => new Date(slot.startAt).toDateString()),
+  ).size;
+}
+
+/**
+ * Sorts schedule slots by start time and removes duplicates.
+ *
+ * @param slots Candidate slot list.
+ * @returns Normalized slot list.
+ */
+function normalizeSlots(
+  slots: AppointmentScheduleSlot[],
+): AppointmentScheduleSlot[] {
+  const uniqueSlots = new Map(
+    slots.map((slot) => [slot.startAt, slot]),
+  );
+
+  return [...uniqueSlots.values()].sort((left, right) =>
+    left.startAt.localeCompare(right.startAt),
+  );
+}
+
+/**
+ * Returns whether two dates fall on the same local day.
+ *
+ * @param left Left date.
+ * @param right Right date.
+ * @returns True when both dates share the same local day.
+ */
+function isSameLocalDay(left: Date, right: Date): boolean {
+  return (
+    left.getFullYear() === right.getFullYear() &&
+    left.getMonth() === right.getMonth() &&
+    left.getDate() === right.getDate()
+  );
+}
+
+/**
+ * Builds all 30-minute slots between the provided boundaries.
+ *
+ * @param startAt Inclusive start.
+ * @param endAt Inclusive end.
+ * @returns Consecutive schedule slots.
+ */
+function buildSlotRange(
+  startAt: Date,
+  endAt: Date,
+): AppointmentScheduleSlot[] {
+  const slots: AppointmentScheduleSlot[] = [];
+
+  for (
+    let current = new Date(startAt);
+    current <= endAt;
+    current = new Date(current.getTime() + HALF_HOUR_IN_MS)
+  ) {
+    slots.push(createScheduleSlot(current));
+  }
+
+  return slots;
+}
+
+/**
+ * Orders two dates from earlier to later.
+ *
+ * @param first First boundary.
+ * @param second Second boundary.
+ * @returns Ordered range tuple.
+ */
+function getOrderedRange(
+  first: Date,
+  second: Date,
+): [Date, Date] {
+  return first <= second ? [first, second] : [second, first];
+}
+
+/**
+ * Returns whether the provided 30-minute slot is selectable.
+ *
+ * @param startAt Slot start time.
+ * @param minSelectableAt Lower bound.
+ * @param maxSelectableAt Upper bound.
+ * @returns True when the slot is selectable.
+ */
+function isSelectableSlot(
+  startAt: Date,
+  minSelectableAt: Date,
+  maxSelectableAt: Date,
+): boolean {
+  const endAt = new Date(startAt.getTime() + HALF_HOUR_IN_MS);
+
+  return (
+    startAt >= minSelectableAt && endAt <= maxSelectableAt
+  );
+}
+
+/**
+ * Returns the valid 30-minute slots for a day.
+ *
+ * @param dayStart Target local day start.
+ * @param minSelectableAt Lower bound.
+ * @param maxSelectableAt Upper bound.
+ * @returns Selectable slots for the day.
+ */
+function getSelectableDaySlots(
+  dayStart: Date,
+  minSelectableAt: Date,
+  maxSelectableAt: Date,
+): AppointmentScheduleSlot[] {
+  return Array.from(
+    { length: (LAST_HOUR - FIRST_HOUR) * 2 },
+    (_, index) => {
+      const hour = FIRST_HOUR + Math.floor(index / 2);
+      const minute = index % 2 === 0 ? 0 : 30;
+      const startAt = new Date(
+        dayStart.getFullYear(),
+        dayStart.getMonth(),
+        dayStart.getDate(),
+        hour,
+        minute,
+        0,
+        0,
+      );
+
+      return startAt;
+    },
+  )
+    .filter((startAt) =>
+      isSelectableSlot(startAt, minSelectableAt, maxSelectableAt),
+    )
+    .map(createScheduleSlot);
+}
+
+/**
  * Validates appointment form values before local submission.
  *
  * @param values Current form values.
+ * @param selectedArticleCount Number of selected articles.
+ * @param requirement Required minimum schedule values.
  * @returns Field-level validation errors.
  */
 function validateForm(
   values: AppointmentFormValues,
+  selectedArticleCount: number,
+  requirement: AppointmentScheduleRequirementType,
 ): AppointmentFormErrors {
-  const requiredMessage = translations.appointment.validation.required;
+  const appointmentLabels = translations.appointment;
+  const requiredMessage = appointmentLabels.validation.required;
   const errors: AppointmentFormErrors = {};
 
   if (isBlank(values.companyName)) {
@@ -72,7 +356,7 @@ function validateForm(
   if (isBlank(values.email)) {
     errors.email = requiredMessage;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(values.email.trim())) {
-    errors.email = translations.appointment.validation.email;
+    errors.email = appointmentLabels.validation.email;
   }
 
   if (isBlank(values.phone)) {
@@ -99,6 +383,39 @@ function validateForm(
     errors.details = requiredMessage;
   }
 
+  if (selectedArticleCount > 0) {
+    const selectedDays = countSelectedDays(
+      values.scheduleSelection.slots,
+    );
+    const selectedHours = values.scheduleSelection.slots.length / 2;
+
+    if (selectedHours === 0) {
+      errors.scheduleSelection =
+        appointmentLabels.validation.scheduleRequired;
+    } else if (
+      selectedDays < requirement.minimumDays &&
+      selectedHours < requirement.minimumHours
+    ) {
+      errors.scheduleSelection = formatTemplate(
+        appointmentLabels.validation.scheduleCombined,
+        {
+          days: requirement.minimumDays,
+          hours: requirement.minimumHours,
+        },
+      );
+    } else if (selectedDays < requirement.minimumDays) {
+      errors.scheduleSelection = formatTemplate(
+        appointmentLabels.validation.scheduleMinimumDays,
+        { days: requirement.minimumDays },
+      );
+    } else if (selectedHours < requirement.minimumHours) {
+      errors.scheduleSelection = formatTemplate(
+        appointmentLabels.validation.scheduleMinimumHours,
+        { hours: requirement.minimumHours },
+      );
+    }
+  }
+
   return errors;
 }
 
@@ -115,22 +432,187 @@ const fieldOrder: (keyof AppointmentFormValues)[] = [
   "projectStartTiming",
   "budget",
   "details",
+  "scheduleSelection",
 ];
+
+/**
+ * Renders one appointment text input field.
+ *
+ * @param props Input field metadata and handlers.
+ * @returns One wrapped text input.
+ */
+function AppointmentInputField(
+  props: AppointmentInputFieldProps,
+) {
+  return (
+    <AppointmentField
+      id={props.id}
+      label={props.label}
+      required={props.required}
+      optionalLabel={props.optionalLabel}
+      errorMessage={props.errorMessage}
+    >
+      <Input
+        id={props.id}
+        name={props.id}
+        type={props.type ?? "text"}
+        aria-invalid={Boolean(props.errorMessage)}
+        placeholder={props.placeholder}
+        value={props.value}
+        onChange={(event) => props.onChange(event.target.value)}
+      />
+    </AppointmentField>
+  );
+}
+
+/**
+ * Renders one appointment select field.
+ *
+ * @param props Select field metadata and handlers.
+ * @returns One wrapped select input.
+ */
+function AppointmentSelectField(
+  props: AppointmentSelectFieldProps,
+) {
+  return (
+    <AppointmentField
+      id={props.id}
+      label={props.label}
+      required={props.required}
+      optionalLabel={props.optionalLabel}
+      errorMessage={props.errorMessage}
+    >
+      <Select
+        value={props.value}
+        onValueChange={props.onChange}
+      >
+        <SelectTrigger
+          id={props.id}
+          aria-invalid={Boolean(props.errorMessage)}
+          className="rounded-md"
+        >
+          <SelectValue placeholder={props.placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {props.options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </AppointmentField>
+  );
+}
+
+/**
+ * Renders one appointment textarea field.
+ *
+ * @param props Textarea field metadata and handlers.
+ * @returns One wrapped textarea input.
+ */
+function AppointmentTextareaField(
+  props: AppointmentTextareaFieldProps,
+) {
+  return (
+    <AppointmentField
+      id={props.id}
+      label={props.label}
+      required={props.required}
+      optionalLabel={props.optionalLabel}
+      errorMessage={props.errorMessage}
+    >
+      <Textarea
+        id={props.id}
+        name={props.id}
+        aria-invalid={Boolean(props.errorMessage)}
+        placeholder={props.placeholder}
+        value={props.value}
+        onChange={(event) => props.onChange(event.target.value)}
+        className={props.className}
+      />
+    </AppointmentField>
+  );
+}
+
+/**
+ * Scrolls to and focuses the first invalid field after submission.
+ *
+ * @param field Target invalid field name.
+ * @returns Nothing.
+ */
+function focusField(field: keyof AppointmentFormValues) {
+  const target = document.getElementById(field);
+
+  if (!target) {
+    return;
+  }
+
+  target.scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+  window.setTimeout(() => {
+    target.focus();
+  }, 150);
+}
 
 /**
  * Renders the appointment form and local validation state.
  *
- * @param props Select input options.
+ * @param props Select input options and article count.
  * @returns Interactive appointment form.
  */
 export default function AppointmentForm(
   props: AppointmentFormProps,
 ) {
   const labels = translations.appointment.form;
+  const scheduleLabels = translations.appointment.schedule;
   const placeholders = labels.placeholders;
+  const scheduleEnabled = props.selectedArticleCount > 0;
+  const requirement = getScheduleRequirement(props.selectedArticleCount);
+  const [currentTime] = useState(() => new Date());
+  const minSelectableAt = useMemo(
+    () => new Date(currentTime.getTime() + DAY_IN_MS),
+    [currentTime],
+  );
+  const maxSelectableAt = useMemo(() => {
+    const maxDay = new Date(currentTime.getTime() + 15 * DAY_IN_MS);
+
+    return new Date(
+      maxDay.getFullYear(),
+      maxDay.getMonth(),
+      maxDay.getDate(),
+      LAST_HOUR,
+      0,
+      0,
+      0,
+    );
+  }, [currentTime]);
   const [values, setValues] =
     useState<AppointmentFormValues>(initialFormValues);
   const [errors, setErrors] = useState<AppointmentFormErrors>({});
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [scheduleDraft, setScheduleDraft] =
+    useState<AppointmentScheduleDraft | null>(null);
+  const [weekStart, setWeekStart] = useState(() =>
+    startOfDay(currentTime),
+  );
+  const draftSlots = useMemo(() => {
+    if (!scheduleDraft) {
+      return [];
+    }
+
+    const [rangeStartAt, rangeEndAt] = getOrderedRange(
+      new Date(scheduleDraft.anchorStartAt),
+      new Date(scheduleDraft.currentEndAt),
+    );
+
+    return buildSlotRange(
+      rangeStartAt,
+      rangeEndAt,
+    );
+  }, [scheduleDraft]);
 
   /**
    * Updates one form field value.
@@ -154,6 +636,193 @@ export default function AppointmentForm(
   }
 
   /**
+   * Replaces the full schedule selection.
+   *
+   * @param updater Next schedule selection or updater.
+   * @returns Nothing.
+   */
+  function updateScheduleSelection(
+    updater:
+      | AppointmentScheduleSelection
+      | ((
+          current: AppointmentScheduleSelection,
+        ) => AppointmentScheduleSelection),
+  ) {
+    setValues((current) => ({
+      ...current,
+      scheduleSelection:
+        typeof updater === "function"
+          ? updater(current.scheduleSelection)
+          : updater,
+    }));
+    setErrors((current) => ({
+      ...current,
+      scheduleSelection: undefined,
+    }));
+  }
+
+  useEffect(() => {
+    function handlePointerUp() {
+      if (!scheduleDraft) {
+        return;
+      }
+
+      updateScheduleSelection((currentSelection) => ({
+        slots: (() => {
+          const [rangeStartAt, rangeEndAt] = getOrderedRange(
+            new Date(scheduleDraft.anchorStartAt),
+            new Date(scheduleDraft.currentEndAt),
+          );
+
+          return normalizeSlots([
+            ...currentSelection.slots,
+            ...buildSlotRange(rangeStartAt, rangeEndAt),
+          ]);
+        })(),
+      }));
+      setScheduleDraft(null);
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsScheduleOpen(false);
+        setScheduleDraft(null);
+      }
+    }
+
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [scheduleDraft]);
+
+  /**
+   * Starts a new draft block from the provided slot.
+   *
+   * @param startAt Slot start time.
+   * @returns Nothing.
+   */
+  function startScheduleDraft(startAt: Date) {
+    const anchorStartAt = startAt.toISOString();
+
+    setScheduleDraft({
+      anchorStartAt,
+      currentEndAt: anchorStartAt,
+    });
+  }
+
+  /**
+   * Handles starting pointer-based block selection.
+   *
+   * @param startAt Slot start time.
+   * @returns Nothing.
+   */
+  function handleSchedulePointerStart(startAt: Date) {
+    startScheduleDraft(startAt);
+  }
+
+  /**
+   * Updates the draft block while dragging across the schedule grid.
+   *
+   * @param startAt Slot start time.
+   * @returns Nothing.
+   */
+  function handleSchedulePointerEnter(startAt: Date) {
+    if (!scheduleDraft) {
+      return;
+    }
+
+    const anchorDate = new Date(scheduleDraft.anchorStartAt);
+
+    if (!isSameLocalDay(anchorDate, startAt)) {
+      return;
+    }
+
+    setScheduleDraft((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        currentEndAt: startAt.toISOString(),
+      };
+    });
+  }
+
+  /**
+   * Removes one rendered block from the current schedule selection.
+   *
+   * @param startAt Block start time.
+   * @param endAt Block end time.
+   * @returns Nothing.
+   */
+  function handleRemoveBlock(
+    startAt: string,
+    endAt: string,
+  ) {
+    const blockStartAt = new Date(startAt).getTime();
+    const blockEndAt = new Date(endAt).getTime();
+
+    updateScheduleSelection((currentSelection) => ({
+      slots: currentSelection.slots.filter((slot) => {
+        const slotStartAt = new Date(slot.startAt).getTime();
+
+        return (
+          slotStartAt < blockStartAt ||
+          slotStartAt >= blockEndAt
+        );
+      }),
+    }));
+  }
+
+  /**
+   * Toggles all selectable hours for a given day.
+   *
+   * @param dayStart Start of the target day.
+   * @returns Nothing.
+   */
+  function handleAllDayToggle(dayStart: Date) {
+    const daySlots = getSelectableDaySlots(
+      dayStart,
+      minSelectableAt,
+      maxSelectableAt,
+    );
+    updateScheduleSelection((currentSelection) => {
+      const selectedKeys = new Set(
+        currentSelection.slots.map((slot) => slot.startAt),
+      );
+      const allSelected = daySlots.every((slot) =>
+        selectedKeys.has(slot.startAt),
+      );
+
+      if (allSelected) {
+        return {
+          slots: currentSelection.slots.filter((slot) => {
+            const slotDate = new Date(slot.startAt);
+
+            return (
+              slotDate.getFullYear() !== dayStart.getFullYear() ||
+              slotDate.getMonth() !== dayStart.getMonth() ||
+              slotDate.getDate() !== dayStart.getDate()
+            );
+          }),
+        };
+      }
+
+      return {
+        slots: normalizeSlots([
+          ...currentSelection.slots,
+          ...daySlots,
+        ]),
+      };
+    });
+  }
+
+  /**
    * Validates the form on submit and blocks invalid submissions.
    *
    * @param event Submit event from the form.
@@ -162,7 +831,11 @@ export default function AppointmentForm(
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const nextErrors = validateForm(values);
+    const nextErrors = validateForm(
+      values,
+      props.selectedArticleCount,
+      requirement,
+    );
     setErrors(nextErrors);
 
     const firstErrorField = fieldOrder.find((field) =>
@@ -173,255 +846,212 @@ export default function AppointmentForm(
       return;
     }
 
-    const target = document.getElementById(firstErrorField);
-
-    if (!target) {
-      return;
+    if (firstErrorField === "scheduleSelection") {
+      setIsScheduleOpen(true);
     }
 
-    target.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-    window.setTimeout(() => {
-      target.focus();
-    }, 150);
+    focusField(firstErrorField);
   }
 
+  const maxWeekStart = startOfDay(maxSelectableAt);
+  const canGoPrevious = weekStart > startOfDay(currentTime);
+  const nextWeekStart = new Date(weekStart.getTime() + 7 * DAY_IN_MS);
+  const canGoNext = nextWeekStart <= maxWeekStart;
+
   return (
-    <form
-      noValidate
-      onSubmit={handleSubmit}
-      className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:grid-cols-2 md:p-8"
-    >
-      <AppointmentField
-        id="companyName"
-        label={labels.companyName}
-        required
-        errorMessage={errors.companyName}
+    <>
+      <form
+        noValidate
+        onSubmit={handleSubmit}
+        className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)] md:grid-cols-2 md:p-8"
       >
-        <Input
+        <AppointmentInputField
           id="companyName"
-          name="companyName"
-          aria-invalid={Boolean(errors.companyName)}
+          label={labels.companyName}
           placeholder={placeholders.companyName}
           value={values.companyName}
-          onChange={(event) =>
-            handleChange("companyName", event.target.value)
-          }
+          errorMessage={errors.companyName}
+          required
+          onChange={(value) => handleChange("companyName", value)}
         />
-      </AppointmentField>
-      <AppointmentField
-        id="contactName"
-        label={labels.contactName}
-        required
-        errorMessage={errors.contactName}
-      >
-        <Input
+        <AppointmentInputField
           id="contactName"
-          name="contactName"
-          aria-invalid={Boolean(errors.contactName)}
+          label={labels.contactName}
           placeholder={placeholders.contactName}
           value={values.contactName}
-          onChange={(event) =>
-            handleChange("contactName", event.target.value)
-          }
+          errorMessage={errors.contactName}
+          required
+          onChange={(value) => handleChange("contactName", value)}
         />
-      </AppointmentField>
-      <AppointmentField
-        id="jobTitle"
-        label={labels.jobTitle}
-      >
-        <Input
+        <AppointmentInputField
           id="jobTitle"
-          name="jobTitle"
-          aria-invalid={Boolean(errors.jobTitle)}
+          label={labels.jobTitle}
           placeholder={placeholders.jobTitle}
           value={values.jobTitle}
-          onChange={(event) =>
-            handleChange("jobTitle", event.target.value)
-          }
+          optionalLabel={labels.optional}
+          onChange={(value) => handleChange("jobTitle", value)}
         />
-      </AppointmentField>
-      <AppointmentField
-        id="email"
-        label={labels.email}
-        required
-        errorMessage={errors.email}
-      >
-        <Input
+        <AppointmentInputField
           id="email"
-          name="email"
+          label={labels.email}
           type="email"
-          aria-invalid={Boolean(errors.email)}
           placeholder={placeholders.email}
           value={values.email}
-          onChange={(event) => handleChange("email", event.target.value)}
+          errorMessage={errors.email}
+          required
+          onChange={(value) => handleChange("email", value)}
         />
-      </AppointmentField>
-      <AppointmentField
-        id="phone"
-        label={labels.phone}
-        required
-        errorMessage={errors.phone}
-      >
-        <Input
+        <AppointmentInputField
           id="phone"
-          name="phone"
+          label={labels.phone}
           type="tel"
-          aria-invalid={Boolean(errors.phone)}
           placeholder={placeholders.phone}
           value={values.phone}
-          onChange={(event) => handleChange("phone", event.target.value)}
+          errorMessage={errors.phone}
+          required
+          onChange={(value) => handleChange("phone", value)}
         />
-      </AppointmentField>
-      <AppointmentField
-        id="referralSource"
-        label={labels.referralSource}
-        required
-        errorMessage={errors.referralSource}
-      >
-        <Input
+        <AppointmentInputField
           id="referralSource"
-          name="referralSource"
-          aria-invalid={Boolean(errors.referralSource)}
+          label={labels.referralSource}
           placeholder={placeholders.referralSource}
           value={values.referralSource}
-          onChange={(event) =>
-            handleChange("referralSource", event.target.value)
-          }
-        />
-      </AppointmentField>
-      <AppointmentField
-        id="industry"
-        label={labels.industry}
-        required
-        errorMessage={errors.industry}
-      >
-        <Select
-          value={values.industry}
-          onValueChange={(value) => handleChange("industry", value)}
-        >
-          <SelectTrigger
-            id="industry"
-            aria-invalid={Boolean(errors.industry)}
-            className="rounded-md"
-          >
-            <SelectValue placeholder={placeholders.industry} />
-          </SelectTrigger>
-          <SelectContent>
-            {props.industryOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </AppointmentField>
-      <AppointmentField
-        id="challenge"
-        label={labels.challenge}
-        required
-        errorMessage={errors.challenge}
-      >
-        <Select
-          value={values.challenge}
-          onValueChange={(value) => handleChange("challenge", value)}
-        >
-          <SelectTrigger
-            id="challenge"
-            aria-invalid={Boolean(errors.challenge)}
-            className="rounded-md"
-          >
-            <SelectValue placeholder={placeholders.challenge} />
-          </SelectTrigger>
-          <SelectContent>
-            {props.challengeOptions.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </AppointmentField>
-      <div className="md:col-span-2">
-        <AppointmentField
-          id="objective"
-          label={labels.objective}
+          errorMessage={errors.referralSource}
           required
-          errorMessage={errors.objective}
-        >
-          <Textarea
+          onChange={(value) => handleChange("referralSource", value)}
+        />
+        <AppointmentSelectField
+          id="industry"
+          label={labels.industry}
+          placeholder={placeholders.industry}
+          value={values.industry}
+          options={props.industryOptions}
+          errorMessage={errors.industry}
+          required
+          onChange={(value) => handleChange("industry", value)}
+        />
+        <AppointmentSelectField
+          id="challenge"
+          label={labels.challenge}
+          placeholder={placeholders.challenge}
+          value={values.challenge}
+          options={props.challengeOptions}
+          errorMessage={errors.challenge}
+          required
+          onChange={(value) => handleChange("challenge", value)}
+        />
+        <div className="md:col-span-2">
+          <AppointmentTextareaField
             id="objective"
-            name="objective"
-            aria-invalid={Boolean(errors.objective)}
+            label={labels.objective}
             placeholder={placeholders.objective}
             value={values.objective}
-            onChange={(event) =>
-              handleChange("objective", event.target.value)
-            }
+            errorMessage={errors.objective}
+            required
             className="min-h-28"
+            onChange={(value) => handleChange("objective", value)}
           />
-        </AppointmentField>
-      </div>
-      <AppointmentField
-        id="projectStartTiming"
-        label={labels.projectStartTiming}
-      >
-        <Input
+        </div>
+        <AppointmentInputField
           id="projectStartTiming"
-          name="projectStartTiming"
-          aria-invalid={Boolean(errors.projectStartTiming)}
+          label={labels.projectStartTiming}
           placeholder={placeholders.projectStartTiming}
           value={values.projectStartTiming}
-          onChange={(event) =>
-            handleChange("projectStartTiming", event.target.value)
+          optionalLabel={labels.optional}
+          onChange={(value) =>
+            handleChange("projectStartTiming", value)
           }
         />
-      </AppointmentField>
-      <AppointmentField
-        id="budget"
-        label={labels.budget}
-      >
-        <Input
+        <AppointmentInputField
           id="budget"
-          name="budget"
-          aria-invalid={Boolean(errors.budget)}
+          label={labels.budget}
           placeholder={placeholders.budget}
           value={values.budget}
-          onChange={(event) => handleChange("budget", event.target.value)}
+          optionalLabel={labels.optional}
+          onChange={(value) => handleChange("budget", value)}
         />
-      </AppointmentField>
-      <div className="md:col-span-2">
-        <AppointmentField
-          id="details"
-          label={labels.details}
-          required
-          errorMessage={errors.details}
-        >
-          <Textarea
+        <div className="md:col-span-2">
+          <AppointmentTextareaField
             id="details"
-            name="details"
-            aria-invalid={Boolean(errors.details)}
+            label={labels.details}
             placeholder={placeholders.details}
             value={values.details}
-            onChange={(event) =>
-              handleChange("details", event.target.value)
-            }
+            errorMessage={errors.details}
+            required
             className="min-h-36"
+            onChange={(value) => handleChange("details", value)}
           />
-        </AppointmentField>
-      </div>
-      <div className="md:col-span-2 flex justify-center">
-        <Button
-          type="submit"
-          variant="outline"
-          size="lg"
-          className="h-12 rounded-md bg-white px-10 text-sm"
-        >
-          {labels.submit}
-        </Button>
-      </div>
-    </form>
+        </div>
+        {scheduleEnabled ? (
+          <div className="md:col-span-2">
+            <AppointmentField
+              id="scheduleSelection"
+              label={scheduleLabels.label}
+              required
+              errorMessage={errors.scheduleSelection}
+            >
+              <div className="space-y-4">
+                <p className="text-sm leading-7 text-slate-600">
+                  {scheduleLabels.helper}
+                </p>
+                <AppointmentScheduleRequirement
+                  requirement={requirement}
+                  selectedSlots={values.scheduleSelection.slots}
+                />
+                <AppointmentScheduleTrigger
+                  buttonId="scheduleSelection"
+                  isOpen={isScheduleOpen}
+                  selectedSlots={values.scheduleSelection.slots}
+                  onOpen={() => setIsScheduleOpen(true)}
+                />
+              </div>
+            </AppointmentField>
+          </div>
+        ) : null}
+        <div className="md:col-span-2 flex justify-center">
+          <Button
+            type="submit"
+            variant="outline"
+            size="lg"
+            className="h-12 rounded-md bg-white px-10 text-sm"
+          >
+            {labels.submit}
+          </Button>
+        </div>
+      </form>
+      {scheduleEnabled ? (
+        <AppointmentScheduleSheet
+          isOpen={isScheduleOpen}
+          weekStart={weekStart}
+          minSelectableAt={minSelectableAt}
+          maxSelectableAt={maxSelectableAt}
+          selectedSlots={values.scheduleSelection.slots}
+          draftSlots={draftSlots}
+          canGoPrevious={canGoPrevious}
+          canGoNext={canGoNext}
+          onClose={() => {
+            setIsScheduleOpen(false);
+            setScheduleDraft(null);
+          }}
+          onPreviousWeek={() => {
+            setWeekStart(
+              (current) =>
+                new Date(current.getTime() - 7 * DAY_IN_MS),
+            );
+          }}
+          onNextWeek={() => {
+            setWeekStart(
+              (current) =>
+                new Date(current.getTime() + 7 * DAY_IN_MS),
+            );
+          }}
+          onPointerStart={handleSchedulePointerStart}
+          onPointerEnter={handleSchedulePointerEnter}
+          onPointerEnd={() => undefined}
+          onAllDayToggle={handleAllDayToggle}
+          onRemoveBlock={handleRemoveBlock}
+        />
+      ) : null}
+    </>
   );
 }

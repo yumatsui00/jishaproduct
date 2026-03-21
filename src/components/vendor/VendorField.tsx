@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-interface AppointmentFieldProps {
+interface VendorFieldProps {
   id: string;
   label: string;
   required?: boolean;
@@ -10,14 +10,12 @@ interface AppointmentFieldProps {
 }
 
 /**
- * Wraps one appointment form control with label and validation feedback.
+ * Wraps one vendor form control with label and validation feedback.
  *
  * @param props Field content and metadata.
- * @returns Field wrapper for appointment inputs.
+ * @returns Field wrapper for vendor form controls.
  */
-export default function AppointmentField(
-  props: AppointmentFieldProps,
-) {
+export default function VendorField(props: VendorFieldProps) {
   return (
     <div className="space-y-2">
       <div className="min-h-5">
@@ -33,9 +31,7 @@ export default function AppointmentField(
       >
         <span>{props.label}</span>
         {props.required ? (
-          <span className="text-xs font-semibold text-red-600">
-            *
-          </span>
+          <span className="text-xs font-semibold text-red-600">*</span>
         ) : props.optionalLabel ? (
           <span className="text-xs font-medium text-slate-500">
             {props.optionalLabel}
