@@ -9,592 +9,3043 @@ Use the review rules defined in AGENTS.md.
 
 ## Diff
 diff --git a/.ai/diff.txt b/.ai/diff.txt
-index 276c334..e69de29 100644
+index 6296be2..e69de29 100644
 --- a/.ai/diff.txt
 +++ b/.ai/diff.txt
-@@ -1,375 +0,0 @@
--diff --git a/AI/task/instruction.md b/AI/task/instruction.md
--index f1f6e44..5b3d511 100644
----- a/AI/task/instruction.md
--+++ b/AI/task/instruction.md
--@@ -1,20 +1,20 @@
-- # Implementation Instruction
-- 
---> **This document is the ONLY specification for the feature.**
---> The AI must implement **strictly** according to this instruction and repository-wide rules
--+> **This document is the ONLY specification for the feature.**  
--+> The AI must implement **strictly** according to this instruction and repository-wide rules  
-- >
-- > **Forbidden actions**
---> - Adding new features not described here
---> - Guessing or assuming unspecified behavior
---> - Refactoring unrelated code
---> - Changing data structures unless explicitly stated
---> - UI redesign beyond the minimal page defined here
--+> - Adding new features not described here  
--+> - Guessing or assuming unspecified behavior  
--+> - Refactoring unrelated code  
--+> - Changing data structures unless explicitly stated  
--+> - UI redesign  
-- > - Modifying any logic or files outside the defined scope
-- 
-- ---
-- 
-- ## 1. Overview
---This feature starts the Next.js project by replacing the default create-next-app home screen with a minimal original top page that confirms the application is running. The purpose is to establish the first visible page and remove starter-template content so development can continue from a clean baseline. The behavior is limited to static rendering of a simple initial page with project-specific text. This does not extend any existing business feature, API, or domain logic.
--+This feature adds a shared top bar for non-authenticated users and makes it render across the application through the global layout. The top bar must provide a clickable logo on the left that routes to `/` and a vendor link on the right that routes to `/vendor`. This is a common UI addition only; it does not add business logic, API behavior, or authenticated-user behavior.
-- 
-- ---
-- 
--@@ -22,60 +22,67 @@ This feature starts the Next.js project by replacing the default create-next-app
-- 
-- ## 2.1 In Scope (MUST implement)
-- 
---- [ ] Replace the default content in `src/app/page.tsx` with a simple static top page for project start-up
---- [ ] Use translation keys for all user-visible text on the page instead of hard-coded UI strings
---- [ ] Define only the translation keys needed for this initial page in `assets/translations/jp.ts`
---- [ ] Update page metadata in `src/app/layout.tsx` so it no longer uses create-next-app defaults
---- [ ] Keep the page implementation within the App Router structure already present in `src/app`
---- [ ] Keep the page static only; no forms, API calls, repository access, or business logic
--+- [ ] Create a non-authenticated shared top bar component under `src/components/common`.
--+- [ ] Render `public/Logo.png` on the left side of the top bar.
--+- [ ] Make the logo clickable and route to `/`.
--+- [ ] Render a right-side link for vendors that routes to `/vendor`.
--+- [ ] Use the main white visual style for the top bar.
--+- [ ] Add required translation keys for the top bar text.
--+- [ ] Integrate the shared top bar into the global layout so it appears on all pages that use `src/app/layout.tsx`.
-- 
-- ## 2.2 Out of Scope (MUST NOT implement)
-- 
-- - No refactoring of unrelated code
---- No renaming existing identifiers unless required for this page implementation
---- No new endpoints, route handlers, or server actions
---- No additions under `logic/`, `db/`, `src/utils/`, or `src/types/`
---- No database, JSON, CSV, or external API integration
---- No localization framework introduction beyond the direct translation definition needed for this page
---- No dark-mode redesign, animation system, or advanced visual polish
---- No new reusable component library setup
--+- No renaming existing identifiers
--+- No changes to UI beyond what is defined in In Scope
--+- No new endpoints or data models not explicitly listed
--+- No design or layout overhaul
--+- No performance optimization unless required
-- - No modification of files not listed in Section 3
--+- No implementation of an authenticated-user top bar
--+- No implementation of the `/vendor` page itself
--+- No addition of business logic, repositories, API routes, or database access
--+- No hardcoded UI text in the component
-- 
-- ---
-- 
-- # 3. Affected Files & Locations
-- 
---> The AI may only create or modify files listed here.
--+> The AI may only create or modify files listed here.  
-- > All other files are strictly off-limits.
-- 
-- ## 3.1 New Files
---
---- None
--+- `src/components/common/PublicTopBar.tsx`: shared non-authenticated top bar component rendered across the app
-- 
-- ## 3.2 Modified Files
---
---- `src/app/page.tsx`: replace starter template UI with the first project home page
---- `src/app/layout.tsx`: update metadata values from the default create-next-app values to project-start values
---- `assets/translations/jp.ts`: add the translation object or exported values required by the page text
--+- `src/app/layout.tsx`: insert the shared top bar into the global app layout so it is visible on all pages
--+- `assets/translations/jp.ts`: add the translation keys required by the new top bar UI
-- 
-- ## 3.3 Reference Only (MUST NOT modify)
---
-- - `AGENTS.md`
-- - `AI/task/seed.md`
---- `AI/task/templates/instruction_template.md`
---- `src/app/globals.css`
---- `src/types/result.ts`
--+- `public/Logo.png`
--+- `src/app/page.tsx`
-- 
-- ---
-- 
-- # 4. Data Structures & Models
-- 
---This feature does not introduce domain models, API payloads, or persistence models.
--+> All relevant data definitions must be explicitly stated here.  
--+> The AI must **not** add, remove, or alter fields unless stated in this section.
-- 
-- ## 4.1 TypeScript Interfaces / Types
-- 
-- ```ts
---export interface HomePageTranslations {
--+interface TopBarTranslations {
--+  common: {
--+    topBar: {
--+      vendorLinkLabel: string;
--+    };
--+  };
--+}
--+
--+interface HomePageTranslations extends TopBarTranslations {
--   home: {
--     hero: {
--       title: string;
--@@ -87,79 +94,98 @@ export interface HomePageTranslations {
-- 
-- Constraints:
-- 
---- Only the keys required for the initial page may be defined
---- All page text must come from the translation structure
---- No additional shared types may be introduced outside the listed files
--+- `vendorLinkLabel` must contain the UI label for the vendor link
--+- Existing `home.hero.title` and `home.hero.description` keys must remain available
--+- No additional translation namespaces or keys may be introduced unless required by this feature
-- 
-- ## 4.2 CSV / Database Schema
-- 
---Not applicable.
--+This feature does not interact with CSV files or a database.
-- 
-- ---
-- 
-- # 5. Logic Specification
-- 
---This feature must remain presentation-only and must not add business logic.
---
-- ## 5.1 Inputs
-- 
---- Static translation values imported from `assets/translations/jp.ts`
---- No user input
---- No route parameters
---- No API request data
---- No repository or database data
--+- Translation value: `translations.common.topBar.vendorLinkLabel`
--+- Static asset path: `/Logo.png`
--+- Navigation targets: `/` and `/vendor`
--+- `children: React.ReactNode` received by `src/app/layout.tsx`
-- 
-- ## 5.2 Processing Flow (Strict Order)
-- 
---1. Load the translation values required for the home page
---2. Render the page title and supporting description from those values
---3. Export the page component as the default App Router home page
--+1. Extend the translation object with the top bar label key
--+2. Create the shared `PublicTopBar` component under `src/components/common`
--+3. Render the logo image on the left and wrap it with navigation to `/`
--+4. Render the vendor link label on the right and link it to `/vendor`
--+5. Apply a white main visual style to the top bar
--+6. Mount the shared top bar from `src/app/layout.tsx` above page content so all pages display it
-- 
-- ## 5.3 Outputs
-- 
-- The feature must produce:
-- 
---- A rendered static home page at `/`
---- Project-specific metadata instead of create-next-app defaults
---- A translation-backed source for all user-visible text on the page
--+- A reusable `PublicTopBar` component
--+- A globally rendered top bar for all pages using the root layout
--+- A logo-based navigation entry to `/`
--+- A vendor link navigation entry to `/vendor`
--+- Updated translation data containing the new top bar label
-- 
-- ## 5.4 Error Handling
-- 
---- No new `Result<T>`-based logic is required because this feature must not add business logic
---- The implementation must avoid runtime-only assumptions such as nullable translation access
---- If a translation object is defined, it must be typed so missing keys are caught by TypeScript
--+No `logic/`, API, repository, or `Result<T>` handling is introduced by this feature.
--+
--+UI implementation rules:
--+
--+- The component must avoid introducing runtime assumptions beyond the listed translation key and static asset
--+- If existing layout structure is preserved, the top bar must not block page content rendering
-- 
-- ---
-- 
---# 6. UI Specification
--+# 6. UI Specification (If applicable)
-- 
-- ## 6.1 Component Structure
-- 
---Define:
--+Component:
--+
--+- `PublicTopBar`
--+
--+Props:
-- 
---- Page component: default export in `src/app/page.tsx`
-- - No props
---- No internal state
---- No interaction with `logic/` or API routes
--+
--+Internal state:
--+
--+- No local state
--+
--+Interaction:
--+
--+- Reads the vendor label from the translation module
--+- Uses standard Next.js navigation primitives for the two links
-- 
-- ## 6.2 Layout & Behavior
-- 
---- Display a simple initial page that clearly indicates the project has started
---- Include one main heading and one short supporting description
---- Keep the layout minimal and static
---- Remove all create-next-app starter links, logos, and external navigation
---- The page must render correctly on desktop and mobile widths using existing styling capabilities
---- Do not add forms, buttons with behavior, modal dialogs, tabs, or dynamic sections
--+- Place the top bar at the top of the global layout
--+- Left area: display `public/Logo.png`
--+- Clicking the logo navigates to `/`
--+- Right area: display the vendor link label
--+- Clicking the vendor link navigates to `/vendor`
--+- The main color direction of the top bar must be white
--+- Keep behavior limited to layout-level rendering; no dropdowns, menus, auth state branching, or responsive redesign beyond what is necessary for basic display
-- 
-- ## 6.3 Translations
-- 
---All UI text must use translation keys.
--+All UI text must use translation keys.  
-- **Hard-coded text is strictly forbidden.**
-- 
---Required keys:
--+Required key:
--+
--+```ts
--+common.topBar.vendorLinkLabel
--+```
-- 
---- `home.hero.title`
---- `home.hero.description`
--+The value should represent the seed requirement text for the vendor link.
-- 
-- ---
-- 
--@@ -167,12 +193,12 @@ Required keys:
-- 
-- The implementation must handle:
-- 
---- No dependency on missing API, logic, or repository layers
---- No reliance on sample data under `db/`
---- No remaining create-next-app default title or description metadata
---- No remaining starter-template UI content on the home page
---- Type-safe access to translation keys
---- A minimal implementation only; do not infer extra sections such as features, pricing, contact, or dashboard links
--+- Rendering through the root layout without removing existing page content
--+- The top bar appearing on the home page and any future pages under the same layout
--+- Absence of authenticated-user branching in this feature
--+- Reuse of the existing `public/Logo.png` asset without duplicating or moving it
--+- Preservation of existing translation keys and metadata
--+- No direct hardcoded UI strings in the new component
-- 
-- ---
-- 
--@@ -183,7 +209,10 @@ The feature is considered complete only if:
-- - All items in **Section 2.1 (In Scope)** are fully implemented
-- - No scope creep: nothing outside In Scope is added
-- - Only files listed in **Section 3** were modified
---- The `/` page no longer shows create-next-app default content
---- All visible page text is sourced from `assets/translations/jp.ts`
---- `src/app/layout.tsx` metadata no longer uses `Create Next App` or `Generated by create next app`
---- No API route, logic layer, repository layer, or sample data changes were introduced
--+- All data structures match **Section 4** exactly
--+- A new shared component exists at `src/components/common/PublicTopBar.tsx`
--+- `src/app/layout.tsx` renders the shared top bar for all pages
--+- The logo is visible on the left and routes to `/`
--+- The vendor link is visible on the right and routes to `/vendor`
--+- The top bar uses a white main visual style
--+- The vendor link label is sourced from translations, not hardcoded
+@@ -1,587 +0,0 @@
+-diff --git a/.ai/diff.txt b/.ai/diff.txt
+-index 276c334..e69de29 100644
+---- a/.ai/diff.txt
+-+++ b/.ai/diff.txt
+-@@ -1,375 +0,0 @@
+--diff --git a/AI/task/instruction.md b/AI/task/instruction.md
+--index f1f6e44..5b3d511 100644
+----- a/AI/task/instruction.md
+--+++ b/AI/task/instruction.md
+--@@ -1,20 +1,20 @@
+-- # Implementation Instruction
+-- 
+---> **This document is the ONLY specification for the feature.**
+---> The AI must implement **strictly** according to this instruction and repository-wide rules
+--+> **This document is the ONLY specification for the feature.**  
+--+> The AI must implement **strictly** according to this instruction and repository-wide rules  
+-- >
+-- > **Forbidden actions**
+---> - Adding new features not described here
+---> - Guessing or assuming unspecified behavior
+---> - Refactoring unrelated code
+---> - Changing data structures unless explicitly stated
+---> - UI redesign beyond the minimal page defined here
+--+> - Adding new features not described here  
+--+> - Guessing or assuming unspecified behavior  
+--+> - Refactoring unrelated code  
+--+> - Changing data structures unless explicitly stated  
+--+> - UI redesign  
+-- > - Modifying any logic or files outside the defined scope
+-- 
+-- ---
+-- 
+-- ## 1. Overview
+---This feature starts the Next.js project by replacing the default create-next-app home screen with a minimal original top page that confirms the application is running. The purpose is to establish the first visible page and remove starter-template content so development can continue from a clean baseline. The behavior is limited to static rendering of a simple initial page with project-specific text. This does not extend any existing business feature, API, or domain logic.
+--+This feature adds a shared top bar for non-authenticated users and makes it render across the application through the global layout. The top bar must provide a clickable logo on the left that routes to `/` and a vendor link on the right that routes to `/vendor`. This is a common UI addition only; it does not add business logic, API behavior, or authenticated-user behavior.
+-- 
+-- ---
+-- 
+--@@ -22,60 +22,67 @@ This feature starts the Next.js project by replacing the default create-next-app
+-- 
+-- ## 2.1 In Scope (MUST implement)
+-- 
+---- [ ] Replace the default content in `src/app/page.tsx` with a simple static top page for project start-up
+---- [ ] Use translation keys for all user-visible text on the page instead of hard-coded UI strings
+---- [ ] Define only the translation keys needed for this initial page in `assets/translations/jp.ts`
+---- [ ] Update page metadata in `src/app/layout.tsx` so it no longer uses create-next-app defaults
+---- [ ] Keep the page implementation within the App Router structure already present in `src/app`
+---- [ ] Keep the page static only; no forms, API calls, repository access, or business logic
+--+- [ ] Create a non-authenticated shared top bar component under `src/components/common`.
+--+- [ ] Render `public/Logo.png` on the left side of the top bar.
+--+- [ ] Make the logo clickable and route to `/`.
+--+- [ ] Render a right-side link for vendors that routes to `/vendor`.
+--+- [ ] Use the main white visual style for the top bar.
+--+- [ ] Add required translation keys for the top bar text.
+--+- [ ] Integrate the shared top bar into the global layout so it appears on all pages that use `src/app/layout.tsx`.
+-- 
+-- ## 2.2 Out of Scope (MUST NOT implement)
+-- 
+-- - No refactoring of unrelated code
+---- No renaming existing identifiers unless required for this page implementation
+---- No new endpoints, route handlers, or server actions
+---- No additions under `logic/`, `db/`, `src/utils/`, or `src/types/`
+---- No database, JSON, CSV, or external API integration
+---- No localization framework introduction beyond the direct translation definition needed for this page
+---- No dark-mode redesign, animation system, or advanced visual polish
+---- No new reusable component library setup
+--+- No renaming existing identifiers
+--+- No changes to UI beyond what is defined in In Scope
+--+- No new endpoints or data models not explicitly listed
+--+- No design or layout overhaul
+--+- No performance optimization unless required
+-- - No modification of files not listed in Section 3
+--+- No implementation of an authenticated-user top bar
+--+- No implementation of the `/vendor` page itself
+--+- No addition of business logic, repositories, API routes, or database access
+--+- No hardcoded UI text in the component
+-- 
+-- ---
+-- 
+-- # 3. Affected Files & Locations
+-- 
+---> The AI may only create or modify files listed here.
+--+> The AI may only create or modify files listed here.  
+-- > All other files are strictly off-limits.
+-- 
+-- ## 3.1 New Files
+---
+---- None
+--+- `src/components/common/PublicTopBar.tsx`: shared non-authenticated top bar component rendered across the app
+-- 
+-- ## 3.2 Modified Files
+---
+---- `src/app/page.tsx`: replace starter template UI with the first project home page
+---- `src/app/layout.tsx`: update metadata values from the default create-next-app values to project-start values
+---- `assets/translations/jp.ts`: add the translation object or exported values required by the page text
+--+- `src/app/layout.tsx`: insert the shared top bar into the global app layout so it is visible on all pages
+--+- `assets/translations/jp.ts`: add the translation keys required by the new top bar UI
+-- 
+-- ## 3.3 Reference Only (MUST NOT modify)
+---
+-- - `AGENTS.md`
+-- - `AI/task/seed.md`
+---- `AI/task/templates/instruction_template.md`
+---- `src/app/globals.css`
+---- `src/types/result.ts`
+--+- `public/Logo.png`
+--+- `src/app/page.tsx`
+-- 
+-- ---
+-- 
+-- # 4. Data Structures & Models
+-- 
+---This feature does not introduce domain models, API payloads, or persistence models.
+--+> All relevant data definitions must be explicitly stated here.  
+--+> The AI must **not** add, remove, or alter fields unless stated in this section.
+-- 
+-- ## 4.1 TypeScript Interfaces / Types
+-- 
+-- ```ts
+---export interface HomePageTranslations {
+--+interface TopBarTranslations {
+--+  common: {
+--+    topBar: {
+--+      vendorLinkLabel: string;
+--+    };
+--+  };
+--+}
+--+
+--+interface HomePageTranslations extends TopBarTranslations {
+--   home: {
+--     hero: {
+--       title: string;
+--@@ -87,79 +94,98 @@ export interface HomePageTranslations {
+-- 
+-- Constraints:
+-- 
+---- Only the keys required for the initial page may be defined
+---- All page text must come from the translation structure
+---- No additional shared types may be introduced outside the listed files
+--+- `vendorLinkLabel` must contain the UI label for the vendor link
+--+- Existing `home.hero.title` and `home.hero.description` keys must remain available
+--+- No additional translation namespaces or keys may be introduced unless required by this feature
+-- 
+-- ## 4.2 CSV / Database Schema
+-- 
+---Not applicable.
+--+This feature does not interact with CSV files or a database.
+-- 
+-- ---
+-- 
+-- # 5. Logic Specification
+-- 
+---This feature must remain presentation-only and must not add business logic.
+---
+-- ## 5.1 Inputs
+-- 
+---- Static translation values imported from `assets/translations/jp.ts`
+---- No user input
+---- No route parameters
+---- No API request data
+---- No repository or database data
+--+- Translation value: `translations.common.topBar.vendorLinkLabel`
+--+- Static asset path: `/Logo.png`
+--+- Navigation targets: `/` and `/vendor`
+--+- `children: React.ReactNode` received by `src/app/layout.tsx`
+-- 
+-- ## 5.2 Processing Flow (Strict Order)
+-- 
+---1. Load the translation values required for the home page
+---2. Render the page title and supporting description from those values
+---3. Export the page component as the default App Router home page
+--+1. Extend the translation object with the top bar label key
+--+2. Create the shared `PublicTopBar` component under `src/components/common`
+--+3. Render the logo image on the left and wrap it with navigation to `/`
+--+4. Render the vendor link label on the right and link it to `/vendor`
+--+5. Apply a white main visual style to the top bar
+--+6. Mount the shared top bar from `src/app/layout.tsx` above page content so all pages display it
+-- 
+-- ## 5.3 Outputs
+-- 
+-- The feature must produce:
+-- 
+---- A rendered static home page at `/`
+---- Project-specific metadata instead of create-next-app defaults
+---- A translation-backed source for all user-visible text on the page
+--+- A reusable `PublicTopBar` component
+--+- A globally rendered top bar for all pages using the root layout
+--+- A logo-based navigation entry to `/`
+--+- A vendor link navigation entry to `/vendor`
+--+- Updated translation data containing the new top bar label
+-- 
+-- ## 5.4 Error Handling
+-- 
+---- No new `Result<T>`-based logic is required because this feature must not add business logic
+---- The implementation must avoid runtime-only assumptions such as nullable translation access
+---- If a translation object is defined, it must be typed so missing keys are caught by TypeScript
+--+No `logic/`, API, repository, or `Result<T>` handling is introduced by this feature.
+--+
+--+UI implementation rules:
+--+
+--+- The component must avoid introducing runtime assumptions beyond the listed translation key and static asset
+--+- If existing layout structure is preserved, the top bar must not block page content rendering
+-- 
+-- ---
+-- 
+---# 6. UI Specification
+--+# 6. UI Specification (If applicable)
+-- 
+-- ## 6.1 Component Structure
+-- 
+---Define:
+--+Component:
+--+
+--+- `PublicTopBar`
+--+
+--+Props:
+-- 
+---- Page component: default export in `src/app/page.tsx`
+-- - No props
+---- No internal state
+---- No interaction with `logic/` or API routes
+--+
+--+Internal state:
+--+
+--+- No local state
+--+
+--+Interaction:
+--+
+--+- Reads the vendor label from the translation module
+--+- Uses standard Next.js navigation primitives for the two links
+-- 
+-- ## 6.2 Layout & Behavior
+-- 
+---- Display a simple initial page that clearly indicates the project has started
+---- Include one main heading and one short supporting description
+---- Keep the layout minimal and static
+---- Remove all create-next-app starter links, logos, and external navigation
+---- The page must render correctly on desktop and mobile widths using existing styling capabilities
+---- Do not add forms, buttons with behavior, modal dialogs, tabs, or dynamic sections
+--+- Place the top bar at the top of the global layout
+--+- Left area: display `public/Logo.png`
+--+- Clicking the logo navigates to `/`
+--+- Right area: display the vendor link label
+--+- Clicking the vendor link navigates to `/vendor`
+--+- The main color direction of the top bar must be white
+--+- Keep behavior limited to layout-level rendering; no dropdowns, menus, auth state branching, or responsive redesign beyond what is necessary for basic display
+-- 
+-- ## 6.3 Translations
+-- 
+---All UI text must use translation keys.
+--+All UI text must use translation keys.  
+-- **Hard-coded text is strictly forbidden.**
+-- 
+---Required keys:
+--+Required key:
+--+
+--+```ts
+--+common.topBar.vendorLinkLabel
+--+```
+-- 
+---- `home.hero.title`
+---- `home.hero.description`
+--+The value should represent the seed requirement text for the vendor link.
+-- 
+-- ---
+-- 
+--@@ -167,12 +193,12 @@ Required keys:
+-- 
+-- The implementation must handle:
+-- 
+---- No dependency on missing API, logic, or repository layers
+---- No reliance on sample data under `db/`
+---- No remaining create-next-app default title or description metadata
+---- No remaining starter-template UI content on the home page
+---- Type-safe access to translation keys
+---- A minimal implementation only; do not infer extra sections such as features, pricing, contact, or dashboard links
+--+- Rendering through the root layout without removing existing page content
+--+- The top bar appearing on the home page and any future pages under the same layout
+--+- Absence of authenticated-user branching in this feature
+--+- Reuse of the existing `public/Logo.png` asset without duplicating or moving it
+--+- Preservation of existing translation keys and metadata
+--+- No direct hardcoded UI strings in the new component
+-- 
+-- ---
+-- 
+--@@ -183,7 +209,10 @@ The feature is considered complete only if:
+-- - All items in **Section 2.1 (In Scope)** are fully implemented
+-- - No scope creep: nothing outside In Scope is added
+-- - Only files listed in **Section 3** were modified
+---- The `/` page no longer shows create-next-app default content
+---- All visible page text is sourced from `assets/translations/jp.ts`
+---- `src/app/layout.tsx` metadata no longer uses `Create Next App` or `Generated by create next app`
+---- No API route, logic layer, repository layer, or sample data changes were introduced
+--+- All data structures match **Section 4** exactly
+--+- A new shared component exists at `src/components/common/PublicTopBar.tsx`
+--+- `src/app/layout.tsx` renders the shared top bar for all pages
+--+- The logo is visible on the left and routes to `/`
+--+- The vendor link is visible on the right and routes to `/vendor`
+--+- The top bar uses a white main visual style
+--+- The vendor link label is sourced from translations, not hardcoded
+--diff --git a/AI/task/seed.md b/AI/task/seed.md
+--index 879efa3..da20c84 100644
+----- a/AI/task/seed.md
+--+++ b/AI/task/seed.md
+--@@ -1,17 +1,20 @@
+-- # Feature Seed
+-- 
+-- ## 1. Summary (必須・短く)
+---プロジェクトを開始する。
+--+プロジェクト全体使用するトップバーを作成する。
+-- ---
+-- 
+-- ## 2. Purpose / 背景
+---next.jsでの開発を開始するために、コマンドを実行し、最初のページを作成する。デザインは適当で構わない。
+--+プロジェクト全体で使用するトップバーを作成する。非ログイン者専用のトップバーであり、全ページでこのロゴか、後に作成するログイン者専用のトップバーが表示される。
+-- 
+-- ---
+-- 
+-- ## 3. Requirements (箇条書きでOK)
+---AGENTS.mdを参照する
+---
+--+・メインカラーは白で作成する
+--+・トップバーの左側にpublic/Logo.pngを置き、それをクリックするとルートページへ遷移する
+--+・トップバーの右側にベンダーの方はこちらのと記載されたリンク付きの文字を配置する。(/vendorへ遷移する)
+--+・src/components/commonを作成し、そこに非ログイン者用トップバーとして作成する。
+--+・全ページで必ず使用するようにする
+-- 
+-- ---
+-- 
+--diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
+--index 6048778..9265360 100644
+----- a/assets/translations/jp.ts
+--+++ b/assets/translations/jp.ts
+--@@ -1,4 +1,9 @@
+-- interface HomePageTranslations {
+--+  common: {
+--+    topBar: {
+--+      vendorLinkLabel: string;
+--+    };
+--+  };
+--   home: {
+--     hero: {
+--       title: string;
+--@@ -8,6 +13,11 @@ interface HomePageTranslations {
+-- }
+-- 
+-- const translations: HomePageTranslations = {
+--+  common: {
+--+    topBar: {
+--+      vendorLinkLabel: "ベンダーの方はこちら",
+--+    },
+--+  },
+--   home: {
+--     hero: {
+--       title: "Jisha project has started.",
+--diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+--index aeb07a1..0619fe7 100644
+----- a/src/app/layout.tsx
+--+++ b/src/app/layout.tsx
+--@@ -1,5 +1,8 @@
+-- import type { Metadata } from "next";
+-- import { Geist, Geist_Mono } from "next/font/google";
+--+
+--+import PublicTopBar from "@/components/common/PublicTopBar";
+--+
+-- import "./globals.css";
+-- 
+-- const geistSans = Geist({
+--@@ -27,7 +30,10 @@ export default function RootLayout({
+--       <body
+--         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+--       >
+---        {children}
+--+        <div className="min-h-screen bg-background text-foreground">
+--+          <PublicTopBar />
+--+          {children}
+--+        </div>
+--       </body>
+--     </html>
+--   );
 -diff --git a/AI/task/seed.md b/AI/task/seed.md
--index 879efa3..da20c84 100644
+-index 88bb13c..9136523 100644
 ---- a/AI/task/seed.md
 -+++ b/AI/task/seed.md
--@@ -1,17 +1,20 @@
+-@@ -1,15 +1,31 @@
 - # Feature Seed
 - 
 - ## 1. Summary (必須・短く)
---プロジェクトを開始する。
--+プロジェクト全体使用するトップバーを作成する。
+--プロジェクト全体使用するトップバーを作成する。
+-+ランディングページの大枠を作成する。
 - ---
 - 
 - ## 2. Purpose / 背景
---next.jsでの開発を開始するために、コマンドを実行し、最初のページを作成する。デザインは適当で構わない。
--+プロジェクト全体で使用するトップバーを作成する。非ログイン者専用のトップバーであり、全ページでこのロゴか、後に作成するログイン者専用のトップバーが表示される。
+--
+-+ランディングページの大枠を作成する。作成に当り必要なデータはサンプルデータを作成する。
 - 
 - ---
 - 
 - ## 3. Requirements (箇条書きでOK)
---AGENTS.mdを参照する
+-+・ランディングページは複数セクションから構成される
+-+・最初にアプリについての説明を表示するセクション（以降セクション１と呼ぶ）。
+-+・セクション１のH1: AI開発を、実績で学ぶ
+-+・セクション１のサブタイトル：成果・データ条件・期間まで見て、納得して選べる
+-+・セクション１のCTA：実績を見る(Primary) 無料で相談する(Secondary) ホバーなどのデザインはほしいが、繊維はまだ必要無い
+-+
+-+・次に実績カードセクション
+-+・見出し：成果で、比較する。
+-+・サブ：業界・課題・成果・データ条件で絞り込めます。
+-+・画面左部にフィルタリングできるセクション。画面の1/3程度の幅をイメージ
+-+・画面右部に実績カードが縦に並んでいる。一枚の実績カードは残りの幅を取るような横幅
+-+・フィルタリングには、課題、業界、フェーズの大項目があり、少項目は適当に作成して良い。複数選択可能で、最下部にある検索ボタンを押すとフィルタリングされた実績カードが表示
+-+・実績カードは一度に最大20枚表示。ページ下部にある次の記事、前の記事ボタンで次の20枚を表示
+-+・実績カードデザインはuiを参照
+-+・サンプルデータは60件ほど作成してほしい
+-+
+- 
+- ---
+- 
+-@@ -21,7 +37,7 @@
+- ---
+- 
+- ## 5. UI Notes (あれば)
 --
--+・メインカラーは白で作成する
--+・トップバーの左側にpublic/Logo.pngを置き、それをクリックするとルートページへ遷移する
--+・トップバーの右側にベンダーの方はこちらのと記載されたリンク付きの文字を配置する。(/vendorへ遷移する)
--+・src/components/commonを作成し、そこに非ログイン者用トップバーとして作成する。
--+・全ページで必ず使用するようにする
+-+実績カードはAI/task/uiを参考
 - 
 - ---
 - 
 -diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
--index 6048778..9265360 100644
+-index a1544b4..224085c 100644
 ---- a/assets/translations/jp.ts
 -+++ b/assets/translations/jp.ts
--@@ -1,4 +1,9 @@
-- interface HomePageTranslations {
--+  common: {
--+    topBar: {
--+      vendorLinkLabel: string;
--+    };
--+  };
--   home: {
+-@@ -19,6 +19,54 @@ interface HomePageTranslations {
 -     hero: {
 -       title: string;
--@@ -8,6 +13,11 @@ interface HomePageTranslations {
+-       description: string;
+-+      primaryCta: string;
+-+      secondaryCta: string;
+-+      eyebrow: string;
+-+      metricsTitle: string;
+-+      metrics: {
+-+        caseStudies: string;
+-+        cardsPerPage: string;
+-+        filterGroups: string;
+-+      };
+-+      highlights: {
+-+        outcomeTitle: string;
+-+        outcomeBody: string;
+-+        trustTitle: string;
+-+        trustBody: string;
+-+      };
+-+    };
+-+    caseStudies: {
+-+      eyebrow: string;
+-+      sectionTitle: string;
+-+      sectionDescription: string;
+-+      filters: {
+-+        challenge: string;
+-+        industry: string;
+-+        phase: string;
+-+      };
+-+      actions: {
+-+        search: string;
+-+        previous: string;
+-+        next: string;
+-+      };
+-+      states: {
+-+        empty: string;
+-+        error: string;
+-+        loading: string;
+-+      };
+-+      meta: {
+-+        pageLabel: string;
+-+        totalLabel: string;
+-+      };
+-+      card: {
+-+        price: string;
+-+        initialCost: string;
+-+        freePlan: string;
+-+        freeTrial: string;
+-+        dataCondition: string;
+-+        duration: string;
+-+        outcome: string;
+-+      };
+-     };
+-   };
 - }
-- 
-- const translations: HomePageTranslations = {
--+  common: {
--+    topBar: {
--+      vendorLinkLabel: "ベンダーの方はこちら",
--+    },
--+  },
+-@@ -42,9 +90,59 @@ const translations: HomePageTranslations = {
+-   },
 -   home: {
 -     hero: {
--       title: "Jisha project has started.",
--diff --git a/src/app/layout.tsx b/src/app/layout.tsx
--index aeb07a1..0619fe7 100644
----- a/src/app/layout.tsx
--+++ b/src/app/layout.tsx
--@@ -1,5 +1,8 @@
-- import type { Metadata } from "next";
-- import { Geist, Geist_Mono } from "next/font/google";
--+
--+import PublicTopBar from "@/components/common/PublicTopBar";
--+
-- import "./globals.css";
+--      title: "Jisha project has started.",
+-+      title: "AI開発を、実績で学ぶ",
+-       description:
+--        "This is the initial top page for the Next.js application.",
+-+        "成果・データ条件・期間まで見て、納得して選べる",
+-+      primaryCta: "実績を見る",
+-+      secondaryCta: "無料で相談する",
+-+      eyebrow: "AI Development Case Library",
+-+      metricsTitle: "Selected Metrics",
+-+      metrics: {
+-+        caseStudies: "case studies",
+-+        cardsPerPage: "cards per page",
+-+        filterGroups: "filter groups",
+-+      },
+-+      highlights: {
+-+        outcomeTitle: "Outcome",
+-+        outcomeBody:
+-+          "成果・データ条件・期間まで同じ面で比較できる構成に限定。",
+-+        trustTitle: "Trust",
+-+        trustBody: "まず実績を見て、次に相談する導線を一画面に集約。",
+-+      },
+-+    },
+-+    caseStudies: {
+-+      eyebrow: "Case Studies",
+-+      sectionTitle: "成果で、比較する。",
+-+      sectionDescription:
+-+        "業界・課題・成果・データ条件で絞り込めます。",
+-+      filters: {
+-+        challenge: "課題",
+-+        industry: "業界",
+-+        phase: "フェーズ",
+-+      },
+-+      actions: {
+-+        search: "検索する",
+-+        previous: "前の記事",
+-+        next: "次の記事",
+-+      },
+-+      states: {
+-+        empty: "条件に一致する実績はありません。",
+-+        error: "実績データの取得に失敗しました。",
+-+        loading: "実績データを読み込み中です。",
+-+      },
+-+      meta: {
+-+        pageLabel: "ページ",
+-+        totalLabel: "総件数",
+-+      },
+-+      card: {
+-+        price: "利用料金",
+-+        initialCost: "初期費用",
+-+        freePlan: "無料プラン",
+-+        freeTrial: "無料トライアル",
+-+        dataCondition: "データ条件",
+-+        duration: "期間",
+-+        outcome: "成果",
+-+      },
+-     },
+-   },
+- };
+-diff --git a/src/app/page.tsx b/src/app/page.tsx
+-index 72681c9..d2ee51e 100644
+---- a/src/app/page.tsx
+-+++ b/src/app/page.tsx
+-@@ -1,7 +1,7 @@
+- import PublicTopBar from "@/components/common/PublicTopBar";
+- import PublicFooter from "@/components/common/PublicFooter";
+--
+--import translations from "../../assets/translations/jp";
+-+import CaseStudySection from "@/components/home/CaseStudySection";
+-+import HomeHeroSection from "@/components/home/HomeHeroSection";
 - 
-- const geistSans = Geist({
--@@ -27,7 +30,10 @@ export default function RootLayout({
--       <body
--         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
--       >
---        {children}
--+        <div className="min-h-screen bg-background text-foreground">
--+          <PublicTopBar />
--+          {children}
--+        </div>
--       </body>
--     </html>
+- /**
+-  * Renders the public home page.
+-@@ -9,21 +9,11 @@ import translations from "../../assets/translations/jp";
+-  * @returns The home page.
+-  */
+- export default function Home() {
+--  const { title, description } = translations.home.hero;
+--
+-   return (
+--    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_46%,#ffffff_100%)]">
+-+    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#f4f8ff_38%,#f8fbff_68%,#ffffff_100%)]">
+-       <PublicTopBar />
+--      <section className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-6 py-20">
+--        <div className="w-full max-w-3xl rounded-[2rem] border border-slate-200/80 bg-white/80 px-8 py-16 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+--          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+--            {title}
+--          </h1>
+--          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
+--            {description}
+--          </p>
+--        </div>
+--      </section>
+-+      <HomeHeroSection />
+-+      <CaseStudySection />
+-       <PublicFooter />
+-     </main>
 -   );
+diff --git a/.ai/review_prompt.txt b/.ai/review_prompt.txt
+index 651fcf7..021cdc8 100644
+--- a/.ai/review_prompt.txt
++++ b/.ai/review_prompt.txt
+@@ -9,592 +9,974 @@ Use the review rules defined in AGENTS.md.
+ 
+ ## Diff
+ diff --git a/.ai/diff.txt b/.ai/diff.txt
+-index 276c334..e69de29 100644
++index 6296be2..e69de29 100644
+ --- a/.ai/diff.txt
+ +++ b/.ai/diff.txt
+-@@ -1,375 +0,0 @@
+--diff --git a/AI/task/instruction.md b/AI/task/instruction.md
+--index f1f6e44..5b3d511 100644
+----- a/AI/task/instruction.md
+--+++ b/AI/task/instruction.md
+--@@ -1,20 +1,20 @@
+-- # Implementation Instruction
+-- 
+---> **This document is the ONLY specification for the feature.**
+---> The AI must implement **strictly** according to this instruction and repository-wide rules
+--+> **This document is the ONLY specification for the feature.**  
+--+> The AI must implement **strictly** according to this instruction and repository-wide rules  
+-- >
+-- > **Forbidden actions**
+---> - Adding new features not described here
+---> - Guessing or assuming unspecified behavior
+---> - Refactoring unrelated code
+---> - Changing data structures unless explicitly stated
+---> - UI redesign beyond the minimal page defined here
+--+> - Adding new features not described here  
+--+> - Guessing or assuming unspecified behavior  
+--+> - Refactoring unrelated code  
+--+> - Changing data structures unless explicitly stated  
+--+> - UI redesign  
+-- > - Modifying any logic or files outside the defined scope
+-- 
+-- ---
+-- 
+-- ## 1. Overview
+---This feature starts the Next.js project by replacing the default create-next-app home screen with a minimal original top page that confirms the application is running. The purpose is to establish the first visible page and remove starter-template content so development can continue from a clean baseline. The behavior is limited to static rendering of a simple initial page with project-specific text. This does not extend any existing business feature, API, or domain logic.
+--+This feature adds a shared top bar for non-authenticated users and makes it render across the application through the global layout. The top bar must provide a clickable logo on the left that routes to `/` and a vendor link on the right that routes to `/vendor`. This is a common UI addition only; it does not add business logic, API behavior, or authenticated-user behavior.
+-- 
+-- ---
+-- 
+--@@ -22,60 +22,67 @@ This feature starts the Next.js project by replacing the default create-next-app
+-- 
+-- ## 2.1 In Scope (MUST implement)
+-- 
+---- [ ] Replace the default content in `src/app/page.tsx` with a simple static top page for project start-up
+---- [ ] Use translation keys for all user-visible text on the page instead of hard-coded UI strings
+---- [ ] Define only the translation keys needed for this initial page in `assets/translations/jp.ts`
+---- [ ] Update page metadata in `src/app/layout.tsx` so it no longer uses create-next-app defaults
+---- [ ] Keep the page implementation within the App Router structure already present in `src/app`
+---- [ ] Keep the page static only; no forms, API calls, repository access, or business logic
+--+- [ ] Create a non-authenticated shared top bar component under `src/components/common`.
+--+- [ ] Render `public/Logo.png` on the left side of the top bar.
+--+- [ ] Make the logo clickable and route to `/`.
+--+- [ ] Render a right-side link for vendors that routes to `/vendor`.
+--+- [ ] Use the main white visual style for the top bar.
+--+- [ ] Add required translation keys for the top bar text.
+--+- [ ] Integrate the shared top bar into the global layout so it appears on all pages that use `src/app/layout.tsx`.
+-- 
+-- ## 2.2 Out of Scope (MUST NOT implement)
+-- 
+-- - No refactoring of unrelated code
+---- No renaming existing identifiers unless required for this page implementation
+---- No new endpoints, route handlers, or server actions
+---- No additions under `logic/`, `db/`, `src/utils/`, or `src/types/`
+---- No database, JSON, CSV, or external API integration
+---- No localization framework introduction beyond the direct translation definition needed for this page
+---- No dark-mode redesign, animation system, or advanced visual polish
+---- No new reusable component library setup
+--+- No renaming existing identifiers
+--+- No changes to UI beyond what is defined in In Scope
+--+- No new endpoints or data models not explicitly listed
+--+- No design or layout overhaul
+--+- No performance optimization unless required
+-- - No modification of files not listed in Section 3
+--+- No implementation of an authenticated-user top bar
+--+- No implementation of the `/vendor` page itself
+--+- No addition of business logic, repositories, API routes, or database access
+--+- No hardcoded UI text in the component
+-- 
+-- ---
+-- 
+-- # 3. Affected Files & Locations
+-- 
+---> The AI may only create or modify files listed here.
+--+> The AI may only create or modify files listed here.  
+-- > All other files are strictly off-limits.
+-- 
+-- ## 3.1 New Files
+---
+---- None
+--+- `src/components/common/PublicTopBar.tsx`: shared non-authenticated top bar component rendered across the app
+-- 
+-- ## 3.2 Modified Files
+---
+---- `src/app/page.tsx`: replace starter template UI with the first project home page
+---- `src/app/layout.tsx`: update metadata values from the default create-next-app values to project-start values
+---- `assets/translations/jp.ts`: add the translation object or exported values required by the page text
+--+- `src/app/layout.tsx`: insert the shared top bar into the global app layout so it is visible on all pages
+--+- `assets/translations/jp.ts`: add the translation keys required by the new top bar UI
+-- 
+-- ## 3.3 Reference Only (MUST NOT modify)
+---
+-- - `AGENTS.md`
+-- - `AI/task/seed.md`
+---- `AI/task/templates/instruction_template.md`
+---- `src/app/globals.css`
+---- `src/types/result.ts`
+--+- `public/Logo.png`
+--+- `src/app/page.tsx`
+-- 
+-- ---
+-- 
+-- # 4. Data Structures & Models
+-- 
+---This feature does not introduce domain models, API payloads, or persistence models.
+--+> All relevant data definitions must be explicitly stated here.  
+--+> The AI must **not** add, remove, or alter fields unless stated in this section.
+-- 
+-- ## 4.1 TypeScript Interfaces / Types
+-- 
+-- ```ts
+---export interface HomePageTranslations {
+--+interface TopBarTranslations {
+--+  common: {
+--+    topBar: {
+--+      vendorLinkLabel: string;
+--+    };
+--+  };
+--+}
+--+
+--+interface HomePageTranslations extends TopBarTranslations {
+--   home: {
+--     hero: {
+--       title: string;
+--@@ -87,79 +94,98 @@ export interface HomePageTranslations {
+-- 
+-- Constraints:
+-- 
+---- Only the keys required for the initial page may be defined
+---- All page text must come from the translation structure
+---- No additional shared types may be introduced outside the listed files
+--+- `vendorLinkLabel` must contain the UI label for the vendor link
+--+- Existing `home.hero.title` and `home.hero.description` keys must remain available
+--+- No additional translation namespaces or keys may be introduced unless required by this feature
+-- 
+-- ## 4.2 CSV / Database Schema
+-- 
+---Not applicable.
+--+This feature does not interact with CSV files or a database.
++@@ -1,587 +0,0 @@
++-diff --git a/.ai/diff.txt b/.ai/diff.txt
++-index 276c334..e69de29 100644
++---- a/.ai/diff.txt
++-+++ b/.ai/diff.txt
++-@@ -1,375 +0,0 @@
++--diff --git a/AI/task/instruction.md b/AI/task/instruction.md
++--index f1f6e44..5b3d511 100644
++----- a/AI/task/instruction.md
++--+++ b/AI/task/instruction.md
++--@@ -1,20 +1,20 @@
++-- # Implementation Instruction
++-- 
++---> **This document is the ONLY specification for the feature.**
++---> The AI must implement **strictly** according to this instruction and repository-wide rules
++--+> **This document is the ONLY specification for the feature.**  
++--+> The AI must implement **strictly** according to this instruction and repository-wide rules  
++-- >
++-- > **Forbidden actions**
++---> - Adding new features not described here
++---> - Guessing or assuming unspecified behavior
++---> - Refactoring unrelated code
++---> - Changing data structures unless explicitly stated
++---> - UI redesign beyond the minimal page defined here
++--+> - Adding new features not described here  
++--+> - Guessing or assuming unspecified behavior  
++--+> - Refactoring unrelated code  
++--+> - Changing data structures unless explicitly stated  
++--+> - UI redesign  
++-- > - Modifying any logic or files outside the defined scope
++-- 
++-- ---
++-- 
++-- ## 1. Overview
++---This feature starts the Next.js project by replacing the default create-next-app home screen with a minimal original top page that confirms the application is running. The purpose is to establish the first visible page and remove starter-template content so development can continue from a clean baseline. The behavior is limited to static rendering of a simple initial page with project-specific text. This does not extend any existing business feature, API, or domain logic.
++--+This feature adds a shared top bar for non-authenticated users and makes it render across the application through the global layout. The top bar must provide a clickable logo on the left that routes to `/` and a vendor link on the right that routes to `/vendor`. This is a common UI addition only; it does not add business logic, API behavior, or authenticated-user behavior.
++-- 
++-- ---
++-- 
++--@@ -22,60 +22,67 @@ This feature starts the Next.js project by replacing the default create-next-app
++-- 
++-- ## 2.1 In Scope (MUST implement)
++-- 
++---- [ ] Replace the default content in `src/app/page.tsx` with a simple static top page for project start-up
++---- [ ] Use translation keys for all user-visible text on the page instead of hard-coded UI strings
++---- [ ] Define only the translation keys needed for this initial page in `assets/translations/jp.ts`
++---- [ ] Update page metadata in `src/app/layout.tsx` so it no longer uses create-next-app defaults
++---- [ ] Keep the page implementation within the App Router structure already present in `src/app`
++---- [ ] Keep the page static only; no forms, API calls, repository access, or business logic
++--+- [ ] Create a non-authenticated shared top bar component under `src/components/common`.
++--+- [ ] Render `public/Logo.png` on the left side of the top bar.
++--+- [ ] Make the logo clickable and route to `/`.
++--+- [ ] Render a right-side link for vendors that routes to `/vendor`.
++--+- [ ] Use the main white visual style for the top bar.
++--+- [ ] Add required translation keys for the top bar text.
++--+- [ ] Integrate the shared top bar into the global layout so it appears on all pages that use `src/app/layout.tsx`.
++-- 
++-- ## 2.2 Out of Scope (MUST NOT implement)
++-- 
++-- - No refactoring of unrelated code
++---- No renaming existing identifiers unless required for this page implementation
++---- No new endpoints, route handlers, or server actions
++---- No additions under `logic/`, `db/`, `src/utils/`, or `src/types/`
++---- No database, JSON, CSV, or external API integration
++---- No localization framework introduction beyond the direct translation definition needed for this page
++---- No dark-mode redesign, animation system, or advanced visual polish
++---- No new reusable component library setup
++--+- No renaming existing identifiers
++--+- No changes to UI beyond what is defined in In Scope
++--+- No new endpoints or data models not explicitly listed
++--+- No design or layout overhaul
++--+- No performance optimization unless required
++-- - No modification of files not listed in Section 3
++--+- No implementation of an authenticated-user top bar
++--+- No implementation of the `/vendor` page itself
++--+- No addition of business logic, repositories, API routes, or database access
++--+- No hardcoded UI text in the component
++-- 
++-- ---
++-- 
++-- # 3. Affected Files & Locations
++-- 
++---> The AI may only create or modify files listed here.
++--+> The AI may only create or modify files listed here.  
++-- > All other files are strictly off-limits.
++-- 
++-- ## 3.1 New Files
++---
++---- None
++--+- `src/components/common/PublicTopBar.tsx`: shared non-authenticated top bar component rendered across the app
++-- 
++-- ## 3.2 Modified Files
++---
++---- `src/app/page.tsx`: replace starter template UI with the first project home page
++---- `src/app/layout.tsx`: update metadata values from the default create-next-app values to project-start values
++---- `assets/translations/jp.ts`: add the translation object or exported values required by the page text
++--+- `src/app/layout.tsx`: insert the shared top bar into the global app layout so it is visible on all pages
++--+- `assets/translations/jp.ts`: add the translation keys required by the new top bar UI
++-- 
++-- ## 3.3 Reference Only (MUST NOT modify)
++---
++-- - `AGENTS.md`
++-- - `AI/task/seed.md`
++---- `AI/task/templates/instruction_template.md`
++---- `src/app/globals.css`
++---- `src/types/result.ts`
++--+- `public/Logo.png`
++--+- `src/app/page.tsx`
++-- 
++-- ---
++-- 
++-- # 4. Data Structures & Models
++-- 
++---This feature does not introduce domain models, API payloads, or persistence models.
++--+> All relevant data definitions must be explicitly stated here.  
++--+> The AI must **not** add, remove, or alter fields unless stated in this section.
++-- 
++-- ## 4.1 TypeScript Interfaces / Types
++-- 
++-- ```ts
++---export interface HomePageTranslations {
++--+interface TopBarTranslations {
++--+  common: {
++--+    topBar: {
++--+      vendorLinkLabel: string;
++--+    };
++--+  };
++--+}
++--+
++--+interface HomePageTranslations extends TopBarTranslations {
++--   home: {
++--     hero: {
++--       title: string;
++--@@ -87,79 +94,98 @@ export interface HomePageTranslations {
++-- 
++-- Constraints:
++-- 
++---- Only the keys required for the initial page may be defined
++---- All page text must come from the translation structure
++---- No additional shared types may be introduced outside the listed files
++--+- `vendorLinkLabel` must contain the UI label for the vendor link
++--+- Existing `home.hero.title` and `home.hero.description` keys must remain available
++--+- No additional translation namespaces or keys may be introduced unless required by this feature
++-- 
++-- ## 4.2 CSV / Database Schema
++-- 
++---Not applicable.
++--+This feature does not interact with CSV files or a database.
++-- 
++-- ---
++-- 
++-- # 5. Logic Specification
++-- 
++---This feature must remain presentation-only and must not add business logic.
++---
++-- ## 5.1 Inputs
++-- 
++---- Static translation values imported from `assets/translations/jp.ts`
++---- No user input
++---- No route parameters
++---- No API request data
++---- No repository or database data
++--+- Translation value: `translations.common.topBar.vendorLinkLabel`
++--+- Static asset path: `/Logo.png`
++--+- Navigation targets: `/` and `/vendor`
++--+- `children: React.ReactNode` received by `src/app/layout.tsx`
++-- 
++-- ## 5.2 Processing Flow (Strict Order)
++-- 
++---1. Load the translation values required for the home page
++---2. Render the page title and supporting description from those values
++---3. Export the page component as the default App Router home page
++--+1. Extend the translation object with the top bar label key
++--+2. Create the shared `PublicTopBar` component under `src/components/common`
++--+3. Render the logo image on the left and wrap it with navigation to `/`
++--+4. Render the vendor link label on the right and link it to `/vendor`
++--+5. Apply a white main visual style to the top bar
++--+6. Mount the shared top bar from `src/app/layout.tsx` above page content so all pages display it
++-- 
++-- ## 5.3 Outputs
++-- 
++-- The feature must produce:
++-- 
++---- A rendered static home page at `/`
++---- Project-specific metadata instead of create-next-app defaults
++---- A translation-backed source for all user-visible text on the page
++--+- A reusable `PublicTopBar` component
++--+- A globally rendered top bar for all pages using the root layout
++--+- A logo-based navigation entry to `/`
++--+- A vendor link navigation entry to `/vendor`
++--+- Updated translation data containing the new top bar label
++-- 
++-- ## 5.4 Error Handling
++-- 
++---- No new `Result<T>`-based logic is required because this feature must not add business logic
++---- The implementation must avoid runtime-only assumptions such as nullable translation access
++---- If a translation object is defined, it must be typed so missing keys are caught by TypeScript
++--+No `logic/`, API, repository, or `Result<T>` handling is introduced by this feature.
++--+
++--+UI implementation rules:
++--+
++--+- The component must avoid introducing runtime assumptions beyond the listed translation key and static asset
++--+- If existing layout structure is preserved, the top bar must not block page content rendering
++-- 
++-- ---
++-- 
++---# 6. UI Specification
++--+# 6. UI Specification (If applicable)
++-- 
++-- ## 6.1 Component Structure
++-- 
++---Define:
++--+Component:
++--+
++--+- `PublicTopBar`
++--+
++--+Props:
++-- 
++---- Page component: default export in `src/app/page.tsx`
++-- - No props
++---- No internal state
++---- No interaction with `logic/` or API routes
++--+
++--+Internal state:
++--+
++--+- No local state
++--+
++--+Interaction:
++--+
++--+- Reads the vendor label from the translation module
++--+- Uses standard Next.js navigation primitives for the two links
++-- 
++-- ## 6.2 Layout & Behavior
++-- 
++---- Display a simple initial page that clearly indicates the project has started
++---- Include one main heading and one short supporting description
++---- Keep the layout minimal and static
++---- Remove all create-next-app starter links, logos, and external navigation
++---- The page must render correctly on desktop and mobile widths using existing styling capabilities
++---- Do not add forms, buttons with behavior, modal dialogs, tabs, or dynamic sections
++--+- Place the top bar at the top of the global layout
++--+- Left area: display `public/Logo.png`
++--+- Clicking the logo navigates to `/`
++--+- Right area: display the vendor link label
++--+- Clicking the vendor link navigates to `/vendor`
++--+- The main color direction of the top bar must be white
++--+- Keep behavior limited to layout-level rendering; no dropdowns, menus, auth state branching, or responsive redesign beyond what is necessary for basic display
++-- 
++-- ## 6.3 Translations
++-- 
++---All UI text must use translation keys.
++--+All UI text must use translation keys.  
++-- **Hard-coded text is strictly forbidden.**
++-- 
++---Required keys:
++--+Required key:
++--+
++--+```ts
++--+common.topBar.vendorLinkLabel
++--+```
++-- 
++---- `home.hero.title`
++---- `home.hero.description`
++--+The value should represent the seed requirement text for the vendor link.
++-- 
++-- ---
++-- 
++--@@ -167,12 +193,12 @@ Required keys:
++-- 
++-- The implementation must handle:
++-- 
++---- No dependency on missing API, logic, or repository layers
++---- No reliance on sample data under `db/`
++---- No remaining create-next-app default title or description metadata
++---- No remaining starter-template UI content on the home page
++---- Type-safe access to translation keys
++---- A minimal implementation only; do not infer extra sections such as features, pricing, contact, or dashboard links
++--+- Rendering through the root layout without removing existing page content
++--+- The top bar appearing on the home page and any future pages under the same layout
++--+- Absence of authenticated-user branching in this feature
++--+- Reuse of the existing `public/Logo.png` asset without duplicating or moving it
++--+- Preservation of existing translation keys and metadata
++--+- No direct hardcoded UI strings in the new component
++-- 
++-- ---
++-- 
++--@@ -183,7 +209,10 @@ The feature is considered complete only if:
++-- - All items in **Section 2.1 (In Scope)** are fully implemented
++-- - No scope creep: nothing outside In Scope is added
++-- - Only files listed in **Section 3** were modified
++---- The `/` page no longer shows create-next-app default content
++---- All visible page text is sourced from `assets/translations/jp.ts`
++---- `src/app/layout.tsx` metadata no longer uses `Create Next App` or `Generated by create next app`
++---- No API route, logic layer, repository layer, or sample data changes were introduced
++--+- All data structures match **Section 4** exactly
++--+- A new shared component exists at `src/components/common/PublicTopBar.tsx`
++--+- `src/app/layout.tsx` renders the shared top bar for all pages
++--+- The logo is visible on the left and routes to `/`
++--+- The vendor link is visible on the right and routes to `/vendor`
++--+- The top bar uses a white main visual style
++--+- The vendor link label is sourced from translations, not hardcoded
++--diff --git a/AI/task/seed.md b/AI/task/seed.md
++--index 879efa3..da20c84 100644
++----- a/AI/task/seed.md
++--+++ b/AI/task/seed.md
++--@@ -1,17 +1,20 @@
++-- # Feature Seed
++-- 
++-- ## 1. Summary (必須・短く)
++---プロジェクトを開始する。
++--+プロジェクト全体使用するトップバーを作成する。
++-- ---
++-- 
++-- ## 2. Purpose / 背景
++---next.jsでの開発を開始するために、コマンドを実行し、最初のページを作成する。デザインは適当で構わない。
++--+プロジェクト全体で使用するトップバーを作成する。非ログイン者専用のトップバーであり、全ページでこのロゴか、後に作成するログイン者専用のトップバーが表示される。
++-- 
++-- ---
++-- 
++-- ## 3. Requirements (箇条書きでOK)
++---AGENTS.mdを参照する
++---
++--+・メインカラーは白で作成する
++--+・トップバーの左側にpublic/Logo.pngを置き、それをクリックするとルートページへ遷移する
++--+・トップバーの右側にベンダーの方はこちらのと記載されたリンク付きの文字を配置する。(/vendorへ遷移する)
++--+・src/components/commonを作成し、そこに非ログイン者用トップバーとして作成する。
++--+・全ページで必ず使用するようにする
++-- 
++-- ---
++-- 
++--diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
++--index 6048778..9265360 100644
++----- a/assets/translations/jp.ts
++--+++ b/assets/translations/jp.ts
++--@@ -1,4 +1,9 @@
++-- interface HomePageTranslations {
++--+  common: {
++--+    topBar: {
++--+      vendorLinkLabel: string;
++--+    };
++--+  };
++--   home: {
++--     hero: {
++--       title: string;
++--@@ -8,6 +13,11 @@ interface HomePageTranslations {
++-- }
++-- 
++-- const translations: HomePageTranslations = {
++--+  common: {
++--+    topBar: {
++--+      vendorLinkLabel: "ベンダーの方はこちら",
++--+    },
++--+  },
++--   home: {
++--     hero: {
++--       title: "Jisha project has started.",
++--diff --git a/src/app/layout.tsx b/src/app/layout.tsx
++--index aeb07a1..0619fe7 100644
++----- a/src/app/layout.tsx
++--+++ b/src/app/layout.tsx
++--@@ -1,5 +1,8 @@
++-- import type { Metadata } from "next";
++-- import { Geist, Geist_Mono } from "next/font/google";
++--+
++--+import PublicTopBar from "@/components/common/PublicTopBar";
++--+
++-- import "./globals.css";
++-- 
++-- const geistSans = Geist({
++--@@ -27,7 +30,10 @@ export default function RootLayout({
++--       <body
++--         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
++--       >
++---        {children}
++--+        <div className="min-h-screen bg-background text-foreground">
++--+          <PublicTopBar />
++--+          {children}
++--+        </div>
++--       </body>
++--     </html>
++--   );
++-diff --git a/AI/task/seed.md b/AI/task/seed.md
++-index 88bb13c..9136523 100644
++---- a/AI/task/seed.md
++-+++ b/AI/task/seed.md
++-@@ -1,15 +1,31 @@
++- # Feature Seed
+ - 
++- ## 1. Summary (必須・短く)
++--プロジェクト全体使用するトップバーを作成する。
++-+ランディングページの大枠を作成する。
+ - ---
+ - 
+-- # 5. Logic Specification
+-- 
+---This feature must remain presentation-only and must not add business logic.
++- ## 2. Purpose / 背景
+ --
+-- ## 5.1 Inputs
+-- 
+---- Static translation values imported from `assets/translations/jp.ts`
+---- No user input
+---- No route parameters
+---- No API request data
+---- No repository or database data
+--+- Translation value: `translations.common.topBar.vendorLinkLabel`
+--+- Static asset path: `/Logo.png`
+--+- Navigation targets: `/` and `/vendor`
+--+- `children: React.ReactNode` received by `src/app/layout.tsx`
+-- 
+-- ## 5.2 Processing Flow (Strict Order)
+-- 
+---1. Load the translation values required for the home page
+---2. Render the page title and supporting description from those values
+---3. Export the page component as the default App Router home page
+--+1. Extend the translation object with the top bar label key
+--+2. Create the shared `PublicTopBar` component under `src/components/common`
+--+3. Render the logo image on the left and wrap it with navigation to `/`
+--+4. Render the vendor link label on the right and link it to `/vendor`
+--+5. Apply a white main visual style to the top bar
+--+6. Mount the shared top bar from `src/app/layout.tsx` above page content so all pages display it
+-- 
+-- ## 5.3 Outputs
+-- 
+-- The feature must produce:
+-- 
+---- A rendered static home page at `/`
+---- Project-specific metadata instead of create-next-app defaults
+---- A translation-backed source for all user-visible text on the page
+--+- A reusable `PublicTopBar` component
+--+- A globally rendered top bar for all pages using the root layout
+--+- A logo-based navigation entry to `/`
+--+- A vendor link navigation entry to `/vendor`
+--+- Updated translation data containing the new top bar label
+-- 
+-- ## 5.4 Error Handling
+-- 
+---- No new `Result<T>`-based logic is required because this feature must not add business logic
+---- The implementation must avoid runtime-only assumptions such as nullable translation access
+---- If a translation object is defined, it must be typed so missing keys are caught by TypeScript
+--+No `logic/`, API, repository, or `Result<T>` handling is introduced by this feature.
+--+
+--+UI implementation rules:
+--+
+--+- The component must avoid introducing runtime assumptions beyond the listed translation key and static asset
+--+- If existing layout structure is preserved, the top bar must not block page content rendering
++-+ランディングページの大枠を作成する。作成に当り必要なデータはサンプルデータを作成する。
+ - 
+ - ---
+ - 
+---# 6. UI Specification
+--+# 6. UI Specification (If applicable)
+-- 
+-- ## 6.1 Component Structure
+-- 
+---Define:
+--+Component:
+--+
+--+- `PublicTopBar`
+--+
+--+Props:
+-- 
+---- Page component: default export in `src/app/page.tsx`
+-- - No props
+---- No internal state
+---- No interaction with `logic/` or API routes
+--+
+--+Internal state:
+--+
+--+- No local state
++- ## 3. Requirements (箇条書きでOK)
++-+・ランディングページは複数セクションから構成される
++-+・最初にアプリについての説明を表示するセクション（以降セクション１と呼ぶ）。
++-+・セクション１のH1: AI開発を、実績で学ぶ
++-+・セクション１のサブタイトル：成果・データ条件・期間まで見て、納得して選べる
++-+・セクション１のCTA：実績を見る(Primary) 無料で相談する(Secondary) ホバーなどのデザインはほしいが、繊維はまだ必要無い
+ -+
+--+Interaction:
++-+・次に実績カードセクション
++-+・見出し：成果で、比較する。
++-+・サブ：業界・課題・成果・データ条件で絞り込めます。
++-+・画面左部にフィルタリングできるセクション。画面の1/3程度の幅をイメージ
++-+・画面右部に実績カードが縦に並んでいる。一枚の実績カードは残りの幅を取るような横幅
++-+・フィルタリングには、課題、業界、フェーズの大項目があり、少項目は適当に作成して良い。複数選択可能で、最下部にある検索ボタンを押すとフィルタリングされた実績カードが表示
++-+・実績カードは一度に最大20枚表示。ページ下部にある次の記事、前の記事ボタンで次の20枚を表示
++-+・実績カードデザインはuiを参照
++-+・サンプルデータは60件ほど作成してほしい
+ -+
+--+- Reads the vendor label from the translation module
+--+- Uses standard Next.js navigation primitives for the two links
+-- 
+-- ## 6.2 Layout & Behavior
+-- 
+---- Display a simple initial page that clearly indicates the project has started
+---- Include one main heading and one short supporting description
+---- Keep the layout minimal and static
+---- Remove all create-next-app starter links, logos, and external navigation
+---- The page must render correctly on desktop and mobile widths using existing styling capabilities
+---- Do not add forms, buttons with behavior, modal dialogs, tabs, or dynamic sections
+--+- Place the top bar at the top of the global layout
+--+- Left area: display `public/Logo.png`
+--+- Clicking the logo navigates to `/`
+--+- Right area: display the vendor link label
+--+- Clicking the vendor link navigates to `/vendor`
+--+- The main color direction of the top bar must be white
+--+- Keep behavior limited to layout-level rendering; no dropdowns, menus, auth state branching, or responsive redesign beyond what is necessary for basic display
+-- 
+-- ## 6.3 Translations
+-- 
+---All UI text must use translation keys.
+--+All UI text must use translation keys.  
+-- **Hard-coded text is strictly forbidden.**
+-- 
+---Required keys:
+--+Required key:
+--+
+--+```ts
+--+common.topBar.vendorLinkLabel
+--+```
+-- 
+---- `home.hero.title`
+---- `home.hero.description`
+--+The value should represent the seed requirement text for the vendor link.
+-- 
+-- ---
+-- 
+--@@ -167,12 +193,12 @@ Required keys:
+-- 
+-- The implementation must handle:
+-- 
+---- No dependency on missing API, logic, or repository layers
+---- No reliance on sample data under `db/`
+---- No remaining create-next-app default title or description metadata
+---- No remaining starter-template UI content on the home page
+---- Type-safe access to translation keys
+---- A minimal implementation only; do not infer extra sections such as features, pricing, contact, or dashboard links
+--+- Rendering through the root layout without removing existing page content
+--+- The top bar appearing on the home page and any future pages under the same layout
+--+- Absence of authenticated-user branching in this feature
+--+- Reuse of the existing `public/Logo.png` asset without duplicating or moving it
+--+- Preservation of existing translation keys and metadata
+--+- No direct hardcoded UI strings in the new component
+-- 
+-- ---
+-- 
+--@@ -183,7 +209,10 @@ The feature is considered complete only if:
+-- - All items in **Section 2.1 (In Scope)** are fully implemented
+-- - No scope creep: nothing outside In Scope is added
+-- - Only files listed in **Section 3** were modified
+---- The `/` page no longer shows create-next-app default content
+---- All visible page text is sourced from `assets/translations/jp.ts`
+---- `src/app/layout.tsx` metadata no longer uses `Create Next App` or `Generated by create next app`
+---- No API route, logic layer, repository layer, or sample data changes were introduced
+--+- All data structures match **Section 4** exactly
+--+- A new shared component exists at `src/components/common/PublicTopBar.tsx`
+--+- `src/app/layout.tsx` renders the shared top bar for all pages
+--+- The logo is visible on the left and routes to `/`
+--+- The vendor link is visible on the right and routes to `/vendor`
+--+- The top bar uses a white main visual style
+--+- The vendor link label is sourced from translations, not hardcoded
+--diff --git a/AI/task/seed.md b/AI/task/seed.md
+--index 879efa3..da20c84 100644
+----- a/AI/task/seed.md
+--+++ b/AI/task/seed.md
+--@@ -1,17 +1,20 @@
+-- # Feature Seed
+ - 
+-- ## 1. Summary (必須・短く)
+---プロジェクトを開始する。
+--+プロジェクト全体使用するトップバーを作成する。
+ - ---
+ - 
+-- ## 2. Purpose / 背景
+---next.jsでの開発を開始するために、コマンドを実行し、最初のページを作成する。デザインは適当で構わない。
+--+プロジェクト全体で使用するトップバーを作成する。非ログイン者専用のトップバーであり、全ページでこのロゴか、後に作成するログイン者専用のトップバーが表示される。
+-- 
++-@@ -21,7 +37,7 @@
+ - ---
+ - 
+-- ## 3. Requirements (箇条書きでOK)
+---AGENTS.mdを参照する
++- ## 5. UI Notes (あれば)
+ --
+--+・メインカラーは白で作成する
+--+・トップバーの左側にpublic/Logo.pngを置き、それをクリックするとルートページへ遷移する
+--+・トップバーの右側にベンダーの方はこちらのと記載されたリンク付きの文字を配置する。(/vendorへ遷移する)
+--+・src/components/commonを作成し、そこに非ログイン者用トップバーとして作成する。
+--+・全ページで必ず使用するようにする
++-+実績カードはAI/task/uiを参考
+ - 
+ - ---
+ - 
+ -diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
+--index 6048778..9265360 100644
++-index a1544b4..224085c 100644
+ ---- a/assets/translations/jp.ts
+ -+++ b/assets/translations/jp.ts
+--@@ -1,4 +1,9 @@
+-- interface HomePageTranslations {
+--+  common: {
+--+    topBar: {
+--+      vendorLinkLabel: string;
+--+    };
+--+  };
+--   home: {
++-@@ -19,6 +19,54 @@ interface HomePageTranslations {
+ -     hero: {
+ -       title: string;
+--@@ -8,6 +13,11 @@ interface HomePageTranslations {
++-       description: string;
++-+      primaryCta: string;
++-+      secondaryCta: string;
++-+      eyebrow: string;
++-+      metricsTitle: string;
++-+      metrics: {
++-+        caseStudies: string;
++-+        cardsPerPage: string;
++-+        filterGroups: string;
++-+      };
++-+      highlights: {
++-+        outcomeTitle: string;
++-+        outcomeBody: string;
++-+        trustTitle: string;
++-+        trustBody: string;
++-+      };
++-+    };
++-+    caseStudies: {
++-+      eyebrow: string;
++-+      sectionTitle: string;
++-+      sectionDescription: string;
++-+      filters: {
++-+        challenge: string;
++-+        industry: string;
++-+        phase: string;
++-+      };
++-+      actions: {
++-+        search: string;
++-+        previous: string;
++-+        next: string;
++-+      };
++-+      states: {
++-+        empty: string;
++-+        error: string;
++-+        loading: string;
++-+      };
++-+      meta: {
++-+        pageLabel: string;
++-+        totalLabel: string;
++-+      };
++-+      card: {
++-+        price: string;
++-+        initialCost: string;
++-+        freePlan: string;
++-+        freeTrial: string;
++-+        dataCondition: string;
++-+        duration: string;
++-+        outcome: string;
++-+      };
++-     };
++-   };
+ - }
+-- 
+-- const translations: HomePageTranslations = {
+--+  common: {
+--+    topBar: {
+--+      vendorLinkLabel: "ベンダーの方はこちら",
+--+    },
+--+  },
++-@@ -42,9 +90,59 @@ const translations: HomePageTranslations = {
++-   },
+ -   home: {
+ -     hero: {
+--       title: "Jisha project has started.",
+--diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+--index aeb07a1..0619fe7 100644
+----- a/src/app/layout.tsx
+--+++ b/src/app/layout.tsx
+--@@ -1,5 +1,8 @@
+-- import type { Metadata } from "next";
+-- import { Geist, Geist_Mono } from "next/font/google";
+--+
+--+import PublicTopBar from "@/components/common/PublicTopBar";
+--+
+-- import "./globals.css";
++--      title: "Jisha project has started.",
++-+      title: "AI開発を、実績で学ぶ",
++-       description:
++--        "This is the initial top page for the Next.js application.",
++-+        "成果・データ条件・期間まで見て、納得して選べる",
++-+      primaryCta: "実績を見る",
++-+      secondaryCta: "無料で相談する",
++-+      eyebrow: "AI Development Case Library",
++-+      metricsTitle: "Selected Metrics",
++-+      metrics: {
++-+        caseStudies: "case studies",
++-+        cardsPerPage: "cards per page",
++-+        filterGroups: "filter groups",
++-+      },
++-+      highlights: {
++-+        outcomeTitle: "Outcome",
++-+        outcomeBody:
++-+          "成果・データ条件・期間まで同じ面で比較できる構成に限定。",
++-+        trustTitle: "Trust",
++-+        trustBody: "まず実績を見て、次に相談する導線を一画面に集約。",
++-+      },
++-+    },
++-+    caseStudies: {
++-+      eyebrow: "Case Studies",
++-+      sectionTitle: "成果で、比較する。",
++-+      sectionDescription:
++-+        "業界・課題・成果・データ条件で絞り込めます。",
++-+      filters: {
++-+        challenge: "課題",
++-+        industry: "業界",
++-+        phase: "フェーズ",
++-+      },
++-+      actions: {
++-+        search: "検索する",
++-+        previous: "前の記事",
++-+        next: "次の記事",
++-+      },
++-+      states: {
++-+        empty: "条件に一致する実績はありません。",
++-+        error: "実績データの取得に失敗しました。",
++-+        loading: "実績データを読み込み中です。",
++-+      },
++-+      meta: {
++-+        pageLabel: "ページ",
++-+        totalLabel: "総件数",
++-+      },
++-+      card: {
++-+        price: "利用料金",
++-+        initialCost: "初期費用",
++-+        freePlan: "無料プラン",
++-+        freeTrial: "無料トライアル",
++-+        dataCondition: "データ条件",
++-+        duration: "期間",
++-+        outcome: "成果",
++-+      },
++-     },
++-   },
++- };
++-diff --git a/src/app/page.tsx b/src/app/page.tsx
++-index 72681c9..d2ee51e 100644
++---- a/src/app/page.tsx
++-+++ b/src/app/page.tsx
++-@@ -1,7 +1,7 @@
++- import PublicTopBar from "@/components/common/PublicTopBar";
++- import PublicFooter from "@/components/common/PublicFooter";
++--
++--import translations from "../../assets/translations/jp";
++-+import CaseStudySection from "@/components/home/CaseStudySection";
++-+import HomeHeroSection from "@/components/home/HomeHeroSection";
+ - 
+-- const geistSans = Geist({
+--@@ -27,7 +30,10 @@ export default function RootLayout({
+--       <body
+--         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+--       >
+---        {children}
+--+        <div className="min-h-screen bg-background text-foreground">
+--+          <PublicTopBar />
+--+          {children}
+--+        </div>
+--       </body>
+--     </html>
++- /**
++-  * Renders the public home page.
++-@@ -9,21 +9,11 @@ import translations from "../../assets/translations/jp";
++-  * @returns The home page.
++-  */
++- export default function Home() {
++--  const { title, description } = translations.home.hero;
++--
++-   return (
++--    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_46%,#ffffff_100%)]">
++-+    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#f4f8ff_38%,#f8fbff_68%,#ffffff_100%)]">
++-       <PublicTopBar />
++--      <section className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-6 py-20">
++--        <div className="w-full max-w-3xl rounded-[2rem] border border-slate-200/80 bg-white/80 px-8 py-16 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-sm">
++--          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
++--            {title}
++--          </h1>
++--          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
++--            {description}
++--          </p>
++--        </div>
++--      </section>
++-+      <HomeHeroSection />
++-+      <CaseStudySection />
++-       <PublicFooter />
++-     </main>
+ -   );
+ diff --git a/AI/task/seed.md b/AI/task/seed.md
+-index 88bb13c..9136523 100644
++index ce3ae95..5fa2edb 100644
+ --- a/AI/task/seed.md
+ +++ b/AI/task/seed.md
+-@@ -1,15 +1,31 @@
++@@ -1,39 +1,35 @@
+  # Feature Seed
+  
+  ## 1. Summary (必須・短く)
+--プロジェクト全体使用するトップバーを作成する。
+-+ランディングページの大枠を作成する。
++-日程調整スロットのリファクタリング
+++AuthTopbarの修正、また、ページ遷移の追加にあたり、新規ページの簡単な作成
+  ---
+  
+  ## 2. Purpose / 背景
+--
+-+ランディングページの大枠を作成する。作成に当り必要なデータはサンプルデータを作成する。
+- 
++-日程調整スロットの修正を行いたい
+++AuthTopbarがまだ大枠しか作成していないのでそれをより良いものにしたい
+  ---
+  
+  ## 3. Requirements (箇条書きでOK)
+-+・ランディングページは複数セクションから構成される
+-+・最初にアプリについての説明を表示するセクション（以降セクション１と呼ぶ）。
+-+・セクション１のH1: AI開発を、実績で学ぶ
+-+・セクション１のサブタイトル：成果・データ条件・期間まで見て、納得して選べる
+-+・セクション１のCTA：実績を見る(Primary) 無料で相談する(Secondary) ホバーなどのデザインはほしいが、繊維はまだ必要無い
+-+
+-+・次に実績カードセクション
+-+・見出し：成果で、比較する。
+-+・サブ：業界・課題・成果・データ条件で絞り込めます。
+-+・画面左部にフィルタリングできるセクション。画面の1/3程度の幅をイメージ
+-+・画面右部に実績カードが縦に並んでいる。一枚の実績カードは残りの幅を取るような横幅
+-+・フィルタリングには、課題、業界、フェーズの大項目があり、少項目は適当に作成して良い。複数選択可能で、最下部にある検索ボタンを押すとフィルタリングされた実績カードが表示
+-+・実績カードは一度に最大20枚表示。ページ下部にある次の記事、前の記事ボタンで次の20枚を表示
+-+・実績カードデザインはuiを参照
+-+・サンプルデータは60件ほど作成してほしい
+-+
++-・基本的な機能はそのままに、現在のスロットの調整を少し修正したい
++-・現状、マスのクリックをすることで選択を行っているのを、ドラッグにしたい
++-・イメージとしては、クリックした場所を起点に下にドラッグすることで、長方形のスロットが作成されるイメージ
++-・各セルがあるのではなく、縦線と薄い横線があり、伸ばすことで予定を埋める
++-・Google calenderで時間の枠をとるときのイメージで行いたい。
++-・単クリックしたときはそこを起点に30分の枠がとられるだけ
++-・各枠の右上には小さな×ボタンがあり、それをクリックすることでその枠を消すことができる
++-・また、その枠内に、小さくx:xx ~ y:yyと時間が記載されている
++-
+++・アカウントアイコンをクリック時に出てくるダイアログの項目の追加（現在は設定、ログアウトのみ）
+++・自分の記事、請求書　のボタンを追加する
+++・また、すべてのアイコンの右上に赤丸を追加できるような構造にしてほしい。ただし、現状のアイコンの大きさ等は変更したくない
+++・通知ボタンをクリックしたときに、通知を新しい順に5件表示。その下にすべての通知を見るを追加。アカウントと同様にダイアログ形式
+++・通知ボタンをクリック時、/notificationsに移動。その遷移用のページを作成する。内容はNotificationsと書かれているだけで問題ない
+++・設定、請求書、自分の記事ボタンを押したときにも/settings, /invoices, /my-articlesに移動するようにする。内容は、通知のように自分のページの題名があるだけでよい
++ 
+  
+  ---
+  
+-@@ -21,7 +37,7 @@
++ ## 4. Scope
++ ### In Scope
++-
+++・簡易ページの作成、トップバーの修正
++ 
++ ### Out of Scope
++-
+++・既存ページの変更
+  ---
+  
+  ## 5. UI Notes (あれば)
+--
+-+実績カードはAI/task/uiを参考
+  
++ 
++-
+  ---
+  
++ ## 6. Edge Cases / Constraints
+ diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
+-index a1544b4..224085c 100644
++index 6b5e9f6..11386cb 100644
+ --- a/assets/translations/jp.ts
+ +++ b/assets/translations/jp.ts
+-@@ -19,6 +19,54 @@ interface HomePageTranslations {
+-     hero: {
+-       title: string;
+-       description: string;
+-+      primaryCta: string;
+-+      secondaryCta: string;
+-+      eyebrow: string;
+-+      metricsTitle: string;
+-+      metrics: {
+-+        caseStudies: string;
+-+        cardsPerPage: string;
+-+        filterGroups: string;
+-+      };
+-+      highlights: {
+-+        outcomeTitle: string;
+-+        outcomeBody: string;
+-+        trustTitle: string;
+-+        trustBody: string;
+-+      };
+-+    };
+-+    caseStudies: {
+-+      eyebrow: string;
+-+      sectionTitle: string;
+-+      sectionDescription: string;
+-+      filters: {
+-+        challenge: string;
+-+        industry: string;
+-+        phase: string;
+-+      };
+-+      actions: {
+-+        search: string;
+-+        previous: string;
+-+        next: string;
+-+      };
+-+      states: {
+-+        empty: string;
+-+        error: string;
+-+        loading: string;
+-+      };
+-+      meta: {
+-+        pageLabel: string;
+-+        totalLabel: string;
+-+      };
+-+      card: {
+-+        price: string;
+-+        initialCost: string;
+-+        freePlan: string;
+-+        freeTrial: string;
+-+        dataCondition: string;
+-+        duration: string;
+-+        outcome: string;
++@@ -4,10 +4,22 @@ interface HomePageTranslations {
++       vendorLinkLabel: string;
++       postArticleLabel: string;
++       notificationsLabel: string;
+++      notificationsMenu: {
+++        items: [
+++          string,
+++          string,
+++          string,
+++          string,
+++          string,
+++        ];
+++        viewAllLabel: string;
+ +      };
++       userMenu: {
++         openLabel: string;
++         companyLabel: string;
++         companyName: string;
+++        myArticlesLabel: string;
+++        invoicesLabel: string;
++         settingsLabel: string;
++         logoutLabel: string;
++       };
++@@ -338,6 +350,20 @@ interface HomePageTranslations {
++       email: string;
+      };
+    };
+++  pages: {
+++    notifications: {
+++      title: string;
+++    };
+++    settings: {
+++      title: string;
+++    };
+++    invoices: {
+++      title: string;
+++    };
+++    myArticles: {
+++      title: string;
+++    };
+++  };
+  }
+-@@ -42,9 +90,59 @@ const translations: HomePageTranslations = {
+-   },
+-   home: {
+-     hero: {
+--      title: "Jisha project has started.",
+-+      title: "AI開発を、実績で学ぶ",
+-       description:
+--        "This is the initial top page for the Next.js application.",
+-+        "成果・データ条件・期間まで見て、納得して選べる",
+-+      primaryCta: "実績を見る",
+-+      secondaryCta: "無料で相談する",
+-+      eyebrow: "AI Development Case Library",
+-+      metricsTitle: "Selected Metrics",
+-+      metrics: {
+-+        caseStudies: "case studies",
+-+        cardsPerPage: "cards per page",
+-+        filterGroups: "filter groups",
+-+      },
+-+      highlights: {
+-+        outcomeTitle: "Outcome",
+-+        outcomeBody:
+-+          "成果・データ条件・期間まで同じ面で比較できる構成に限定。",
+-+        trustTitle: "Trust",
+-+        trustBody: "まず実績を見て、次に相談する導線を一画面に集約。",
+-+      },
+-+    },
+-+    caseStudies: {
+-+      eyebrow: "Case Studies",
+-+      sectionTitle: "成果で、比較する。",
+-+      sectionDescription:
+-+        "業界・課題・成果・データ条件で絞り込めます。",
+-+      filters: {
+-+        challenge: "課題",
+-+        industry: "業界",
+-+        phase: "フェーズ",
+-+      },
+-+      actions: {
+-+        search: "検索する",
+-+        previous: "前の記事",
+-+        next: "次の記事",
+-+      },
+-+      states: {
+-+        empty: "条件に一致する実績はありません。",
+-+        error: "実績データの取得に失敗しました。",
+-+        loading: "実績データを読み込み中です。",
+-+      },
+-+      meta: {
+-+        pageLabel: "ページ",
+-+        totalLabel: "総件数",
+-+      },
+-+      card: {
+-+        price: "利用料金",
+-+        initialCost: "初期費用",
+-+        freePlan: "無料プラン",
+-+        freeTrial: "無料トライアル",
+-+        dataCondition: "データ条件",
+-+        duration: "期間",
+-+        outcome: "成果",
++ 
++ const translations: HomePageTranslations = {
++@@ -346,10 +372,22 @@ const translations: HomePageTranslations = {
++       vendorLinkLabel: "ベンダーの方はこちら",
++       postArticleLabel: "記事投稿",
++       notificationsLabel: "通知",
+++      notificationsMenu: {
+++        items: [
+++          "新しいメッセージがあります",
+++          "請求書の確認依頼があります",
+++          "記事に新しいリアクションが付きました",
+++          "設定更新のお知らせがあります",
+++          "マイ記事の閲覧数が更新されました",
+++        ],
+++        viewAllLabel: "すべての通知を見る",
+ +      },
++       userMenu: {
++         openLabel: "ユーザーメニューを開く",
++         companyLabel: "Company",
++         companyName: "株式会社Jisha",
+++        myArticlesLabel: "自分の記事",
+++        invoicesLabel: "請求書",
++         settingsLabel: "設定",
++         logoutLabel: "ログアウト",
++       },
++@@ -696,6 +734,20 @@ const translations: HomePageTranslations = {
++       email: "メールアドレスの形式が正しくありません。",
+      },
+    },
+++  pages: {
+++    notifications: {
+++      title: "Notifications",
+++    },
+++    settings: {
+++      title: "Settings",
+++    },
+++    invoices: {
+++      title: "Invoices",
+++    },
+++    myArticles: {
+++      title: "My Articles",
+++    },
+++  },
+  };
+-diff --git a/src/app/page.tsx b/src/app/page.tsx
+-index 72681c9..d2ee51e 100644
+---- a/src/app/page.tsx
+-+++ b/src/app/page.tsx
+-@@ -1,7 +1,7 @@
+- import PublicTopBar from "@/components/common/PublicTopBar";
+- import PublicFooter from "@/components/common/PublicFooter";
+--
+--import translations from "../../assets/translations/jp";
+-+import CaseStudySection from "@/components/home/CaseStudySection";
+-+import HomeHeroSection from "@/components/home/HomeHeroSection";
+  
++ export default translations;
++diff --git a/src/components/common/AuthenticatedTopBar.tsx b/src/components/common/AuthenticatedTopBar.tsx
++index aa1a438..a597786 100644
++--- a/src/components/common/AuthenticatedTopBar.tsx
+++++ b/src/components/common/AuthenticatedTopBar.tsx
++@@ -2,7 +2,15 @@
++ 
++ import Image from "next/image";
++ import Link from "next/link";
++-import { Bell, LogOut, Settings, SquarePen, UserCircle2 } from "lucide-react";
+++import {
+++  Bell,
+++  FileText,
+++  LogOut,
+++  ReceiptText,
+++  Settings,
+++  SquarePen,
+++  UserCircle2,
+++} from "lucide-react";
++ import { useEffect, useRef, useState } from "react";
++ 
++ import { Button } from "@/components/ui/button";
++@@ -13,6 +21,11 @@ interface AuthenticatedTopBarProps {
++   companyName: string;
++ }
++ 
+++interface TopBarNotificationItem {
+++  id: string;
+++  label: string;
+++}
+++
+  /**
+-  * Renders the public home page.
+-@@ -9,21 +9,11 @@ import translations from "../../assets/translations/jp";
+-  * @returns The home page.
+-  */
+- export default function Home() {
+--  const { title, description } = translations.home.hero;
+--
++  * Renders the logged-in top bar with a front-end-only user menu.
++  *
++@@ -23,26 +36,43 @@ interface AuthenticatedTopBarProps {
++ export default function AuthenticatedTopBar({
++   companyName,
++ }: AuthenticatedTopBarProps) {
++-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+++  const [isNotificationMenuOpen, setIsNotificationMenuOpen] =
+++    useState(false);
+++  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+++  const notificationContainerRef = useRef<HTMLDivElement>(null);
++   const menuContainerRef = useRef<HTMLDivElement>(null);
++   const labels = translations.common.topBar;
+++  const notificationItems: TopBarNotificationItem[] =
+++    labels.notificationsMenu.items.map((label, index) => ({
+++      id: `notification-${index + 1}`,
+++      label,
+++    }));
++ 
++   useEffect(() => {
++-    if (!isMenuOpen) {
+++    if (!isNotificationMenuOpen && !isUserMenuOpen) {
++       return;
++     }
++ 
++     /**
++-     * Closes the menu when a pointer event happens outside the menu area.
+++     * Closes dialogs when a pointer event happens outside their area.
++      *
++      * @param event - The pointer event from the document.
++      */
++     function handlePointerDown(event: PointerEvent) {
+++      const target = event.target as Node;
+++
+++      if (
+++        notificationContainerRef.current &&
+++        !notificationContainerRef.current.contains(target)
+++      ) {
+++        setIsNotificationMenuOpen(false);
+++      }
+++
++       if (
++         menuContainerRef.current &&
++-        !menuContainerRef.current.contains(event.target as Node)
+++        !menuContainerRef.current.contains(target)
++       ) {
++-        setIsMenuOpen(false);
+++        setIsUserMenuOpen(false);
++       }
++     }
++ 
++@@ -51,7 +81,7 @@ export default function AuthenticatedTopBar({
++     return () => {
++       document.removeEventListener("pointerdown", handlePointerDown);
++     };
++-  }, [isMenuOpen]);
+++  }, [isNotificationMenuOpen, isUserMenuOpen]);
++ 
+    return (
+--    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_46%,#ffffff_100%)]">
+-+    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#f4f8ff_38%,#f8fbff_68%,#ffffff_100%)]">
+-       <PublicTopBar />
+--      <section className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-6 py-20">
+--        <div className="w-full max-w-3xl rounded-[2rem] border border-slate-200/80 bg-white/80 px-8 py-16 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-sm">
+--          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+--            {title}
+--          </h1>
+--          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
+--            {description}
+--          </p>
+--        </div>
+--      </section>
+-+      <HomeHeroSection />
+-+      <CaseStudySection />
+-       <PublicFooter />
+-     </main>
+-   );
++     <header className="fixed inset-x-0 top-0 z-40 border-b border-black/6 bg-white/68 backdrop-blur-md">
++@@ -67,30 +97,67 @@ export default function AuthenticatedTopBar({
++           />
++         </Link>
++         <div className="flex items-center gap-2 sm:gap-3">
++-          <Button
++-            type="button"
++-            variant="ghost"
++-            size="icon"
++-            className="rounded-full text-slate-700 hover:bg-slate-100"
++-            aria-label={labels.notificationsLabel}
++-          >
++-            <Bell className="size-5" />
++-          </Button>
+++          <div ref={notificationContainerRef} className="relative">
+++            <div className="relative inline-flex">
+++              <Button
+++                type="button"
+++                variant="ghost"
+++                size="icon"
+++                className="rounded-full text-slate-700 hover:bg-slate-100"
+++                aria-expanded={isNotificationMenuOpen}
+++                aria-label={labels.notificationsLabel}
+++                onClick={() => {
+++                  setIsNotificationMenuOpen((open) => !open);
+++                  setIsUserMenuOpen(false);
+++                }}
+++              >
+++                <Bell className="size-5" />
+++              </Button>
+++              <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-red-500" />
+++            </div>
+++            {isNotificationMenuOpen ? (
+++              <div className="absolute right-0 top-[calc(100%+0.75rem)] w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
+++                <div className="flex flex-col">
+++                  {notificationItems.map((item) => (
+++                    <div
+++                      key={item.id}
+++                      className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 last:border-b-0"
+++                    >
+++                      {item.label}
+++                    </div>
+++                  ))}
+++                </div>
+++                <Button
+++                  asChild
+++                  variant="ghost"
+++                  className="mt-2 w-full justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+++                >
+++                  <Link href="/notifications">
+++                    {labels.notificationsMenu.viewAllLabel}
+++                  </Link>
+++                </Button>
+++              </div>
+++            ) : null}
+++          </div>
++           <div ref={menuContainerRef} className="relative">
++-            <Button
++-              type="button"
++-              variant="ghost"
++-              size="icon"
++-              className="rounded-full text-slate-700 hover:bg-slate-100"
++-              aria-expanded={isMenuOpen}
++-              aria-label={labels.userMenu.openLabel}
++-              onClick={() => {
++-                setIsMenuOpen((open) => !open);
++-              }}
++-            >
++-              <UserCircle2 className="size-6" />
++-            </Button>
++-            {isMenuOpen ? (
+++            <div className="relative inline-flex">
+++              <Button
+++                type="button"
+++                variant="ghost"
+++                size="icon"
+++                className="rounded-full text-slate-700 hover:bg-slate-100"
+++                aria-expanded={isUserMenuOpen}
+++                aria-label={labels.userMenu.openLabel}
+++                onClick={() => {
+++                  setIsUserMenuOpen((open) => !open);
+++                  setIsNotificationMenuOpen(false);
+++                }}
+++              >
+++                <UserCircle2 className="size-6" />
+++              </Button>
+++              <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-red-500" />
+++            </div>
+++            {isUserMenuOpen ? (
++               <div className="absolute right-0 top-[calc(100%+0.75rem)] w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
++                 <div className="border-b border-slate-100 px-2 pb-3">
++                   <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
++@@ -102,12 +169,34 @@ export default function AuthenticatedTopBar({
++                 </div>
++                 <div className="mt-3 flex flex-col gap-1">
++                   <Button
++-                    type="button"
+++                    asChild
+++                    variant="ghost"
+++                    className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+++                  >
+++                    <Link href="/my-articles">
+++                      <FileText className="size-4" />
+++                      {labels.userMenu.myArticlesLabel}
+++                    </Link>
+++                  </Button>
+++                  <Button
+++                    asChild
+++                    variant="ghost"
+++                    className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+++                  >
+++                    <Link href="/invoices">
+++                      <ReceiptText className="size-4" />
+++                      {labels.userMenu.invoicesLabel}
+++                    </Link>
+++                  </Button>
+++                  <Button
+++                    asChild
++                     variant="ghost"
++                     className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
++                   >
++-                    <Settings className="size-4" />
++-                    {labels.userMenu.settingsLabel}
+++                    <Link href="/settings">
+++                      <Settings className="size-4" />
+++                      {labels.userMenu.settingsLabel}
+++                    </Link>
++                   </Button>
++                   <Button
++                     type="button"
++diff --git a/src/utils/auth/mockAuthState.ts b/src/utils/auth/mockAuthState.ts
++index 77e5006..8e9d817 100644
++--- a/src/utils/auth/mockAuthState.ts
+++++ b/src/utils/auth/mockAuthState.ts
++@@ -10,5 +10,5 @@ export const REQUEST_LOGIN_STATE_HEADER = "x-is-logged-in";
++ export function parseMockLoginState(
++   value: string | null | undefined,
++ ): boolean {
++-  return value === "true";
+++  return value === "false";
++ }
+ 
+ ---
+ 
+@@ -902,7 +1284,13 @@ to evaluate architectural consistency, naming, boundaries, and long-term maintai
+ ---
+ 
+ ## 1. Overview
+-Build the first public landing page skeleton for the application. The page must present a hero section that explains the service and a case-study listing section where users can filter and paginate sample achievements before contacting the team. This feature replaces the current placeholder home page and introduces sample JSON-backed data, backend-facing retrieval logic, and domain UI for the landing page only.
++The authenticated top bar already exists, but its account menu and
++notification behavior are incomplete for the current navigation needs.
++This feature extends the existing authenticated top bar by adding
++menu items, notification preview behavior, red badge support on icon
++buttons, and four simple destination pages for the new routes. The
++feature is UI-only and must not introduce backend, repository, or
++business-logic changes.
+ 
+ ---
+ 
+@@ -910,57 +1298,45 @@ Build the first public landing page skeleton for the application. The page must
+ 
+ ## 2.1 In Scope (MUST implement)
+ 
+-- [ ] Replace the current placeholder content in `src/app/page.tsx` with a landing page composed of:
+-  - a hero section
+-  - a case-study listing section
+-  - the existing public top bar and footer
+-- [ ] Implement hero section content with translation keys for:
+-  - H1: `AI開発を、実績で学ぶ`
+-  - subtitle: `成果・データ条件・期間まで見て、納得して選べる`
+-  - primary CTA: `実績を見る`
+-  - secondary CTA: `無料で相談する`
+-- [ ] Add visible hover styling for both hero CTA buttons.
+-- [ ] Implement a case-study section with:
+-  - section heading `成果で、比較する。`
+-  - section subheading `業界・課題・成果・データ条件で絞り込めます。`
+-  - left filter panel occupying about one-third of the section width on desktop
+-  - right result area occupying the remaining width on desktop
+-  - stacked case-study cards in the result area
+-- [ ] Implement filter UI with three groups only:
+-  - challenge
+-  - industry
+-  - phase
+-- [ ] Each filter group must expose multiple selectable options.
+-- [ ] Filtering must be applied only when the user presses a search button at the bottom of the filter panel.
+-- [ ] Case-study results must display at most 20 cards per page.
+-- [ ] Implement previous-page and next-page buttons below the result list to move through paginated results.
+-- [ ] Create about 60 sample case-study records as JSON data under `db/`.
+-- [ ] Route all sample data access through:
+-  - page/component
+-  - API route
+-  - logic layer
+-  - repository layer
+-  - JSON data file
+-- [ ] Add the necessary shared types for landing-page data and filtering.
+-- [ ] Add translation keys for all newly added UI text in `assets/translations/jp.ts`.
+-- [ ] Match the overall case-study card composition to `AI/task/ui/実績カード参考.png` without introducing extra card features beyond the data defined in Section 4.
++- [ ] Extend the existing authenticated top bar account dialog to add
++      navigation entries for `My Articles` and `Invoices` in addition to
++      the existing `Settings` and `Logout` entries.
++- [ ] Make the `Settings`, `My Articles`, and `Invoices` account dialog
++      entries navigate to `/settings`, `/my-articles`, and `/invoices`.
++- [ ] Keep `Logout` as a visible menu entry only. No logout logic,
++      auth state change, API call, or redirect may be added.
++- [ ] Add a notification dialog opened from the existing notification
++      icon button. The dialog must display exactly 5 notification items
++      in newest-first order, followed by a link/button labeled
++      `View All Notifications`.
++- [ ] Make the `View All Notifications` action navigate to
++      `/notifications`.
++- [ ] Add support for showing a small red circular badge at the
++      top-right corner of each top bar icon button without changing the
++      current icon size, button size, or layout spacing.
++- [ ] Apply the badge-capable structure to the notification icon button
++      and the account icon button so both can show the red badge.
++- [ ] Create simple pages for `/notifications`, `/settings`,
++      `/invoices`, and `/my-articles`.
++- [ ] Each new page must render only the shared top bar and a simple
++      page title matching the route purpose.
++- [ ] Add all newly required UI text through translation keys in
++      `assets/translations/jp.ts`. No UI text may be hardcoded in
++      components or pages.
+ 
+ ## 2.2 Out of Scope (MUST NOT implement)
+ 
+ - No refactoring of unrelated code
+ - No renaming existing identifiers
+-- No changes to UI beyond what is defined in In Scope
+-- No new endpoints or data models not explicitly listed
+-- No design or layout overhaul outside the landing page
+-- No performance optimization unless required
++- No changes to public top bar behavior
++- No changes to existing pages other than adding the new route pages
++- No new API routes, logic modules, repository code, or DB/sample data
++- No real notification fetching, persistence, unread state management,
++  or mark-as-read behavior
++- No logout implementation
++- No badge count display; the badge is visual only and contains no text
++- No design or layout overhaul beyond the required menu/dialog additions
+ - No modification of files not listed in Section 3
+-- No detail page, modal, accordion, or expand/collapse behavior for case-study cards
+-- No free-text search input
+-- No sorting controls
+-- No server actions
+-- No database integration beyond JSON sample data
+-- No analytics, tracking, or form submission implementation
+-- No animation beyond normal hover/focus transitions
+ 
+ ---
+ 
+@@ -970,110 +1346,56 @@ Build the first public landing page skeleton for the application. The page must
+ > All other files are strictly off-limits.
+ 
+ ## 3.1 New Files
+-
+-- `src/app/api/case-studies/route.ts`: API endpoint returning filtered and paginated case-study data
+-- `src/components/home/HomeHeroSection.tsx`: hero section UI
+-- `src/components/home/CaseStudyFilterPanel.tsx`: filter controls and search button
+-- `src/components/home/CaseStudyCard.tsx`: individual case-study card UI
+-- `src/components/home/CaseStudySection.tsx`: section layout, state handling, fetch coordination, pagination UI
+-- `logic/caseStudy/caseStudyRepository.ts`: repository for loading JSON sample data
+-- `logic/caseStudy/getCaseStudies.ts`: landing-page case-study retrieval use case
+-- `src/types/caseStudy.ts`: shared types for records, filters, request params, and API payload
+-- `db/case-studies.json`: sample case-study records
++- `src/app/notifications/page.tsx`: simple route page for notifications
++- `src/app/settings/page.tsx`: simple route page for settings
++- `src/app/invoices/page.tsx`: simple route page for invoices
++- `src/app/my-articles/page.tsx`: simple route page for my articles
+ 
+ ## 3.2 Modified Files
+-
+-- `src/app/page.tsx`: replace placeholder home content with landing-page composition
+-- `assets/translations/jp.ts`: add all landing-page translation keys
++- `src/components/common/AuthenticatedTopBar.tsx`: add notification
++  dialog, account menu items, route links, and badge-capable icon
++  button structure
++- `assets/translations/jp.ts`: add all translation keys required by the
++  new dialog items, notification preview content, view-all action, and
++  simple page titles
+ 
+ ## 3.3 Reference Only (MUST NOT modify)
+-
+ - `AGENTS.md`
+ - `AI/task/seed.md`
+ - `AI/task/templates/instruction_template.md`
+-- `AI/task/ui/実績カード参考.png`
+-- `src/components/common/PublicTopBar.tsx`
+-- `src/components/common/PublicFooter.tsx`
+-- `src/types/result.ts`
++- `src/components/common/TopBar.tsx`
++- `src/components/common/PageTopBar.tsx`
+ 
+ ---
+ 
+ # 4. Data Structures & Models
+ 
+-> All relevant data definitions must be explicitly stated here.
+-> The AI must **not** add, remove, or alter fields unless stated in this section.
++This feature does not interact with API routes, domain logic, sample
++data, or a database.
+ 
+ ## 4.1 TypeScript Interfaces / Types
+ 
+-```ts
+-export type CaseStudyFilterGroup =
+-  | "challenge"
+-  | "industry"
+-  | "phase";
++The implementation may add only local UI-only types needed for the top
++bar component. If added, the structure must stay limited to the
++following shape:
+ 
+-export interface CaseStudyRecord {
++```ts
++interface TopBarNotificationItem {
+   id: string;
+-  slug: string;
+-  companyName: string;
+-  serviceName: string;
+-  industry: string;
+-  challenge: string;
+-  phase: string;
+-  summary: string;
+-  outcome: string;
+-  dataCondition: string;
+-  durationLabel: string;
+-  thumbnailLabel: string;
+-  priceLabel: string;
+-  initialCostLabel: string;
+-  freePlanLabel: string;
+-  trialLabel: string;
+-}
+-
+-export interface CaseStudyFilterOption {
+   label: string;
+-  value: string;
+-}
+-
+-export interface CaseStudyFilterGroups {
+-  challenge: CaseStudyFilterOption[];
+-  industry: CaseStudyFilterOption[];
+-  phase: CaseStudyFilterOption[];
+-}
+-
+-export interface CaseStudySearchParams {
+-  selectedChallenges: string[];
+-  selectedIndustries: string[];
+-  selectedPhases: string[];
+-  page: number;
+-  pageSize: 20;
+-}
+-
+-export interface CaseStudyListResponse {
+-  items: CaseStudyRecord[];
+-  totalCount: number;
+-  currentPage: number;
+-  pageSize: 20;
+-  totalPages: number;
+-  availableFilters: CaseStudyFilterGroups;
+ }
+ ```
+ 
+-## 4.2 JSON Schema
++Constraints:
+ 
+-- **Target file:** `db/case-studies.json`
+-- **Top-level shape:** array of `CaseStudyRecord`
+-- **Record count:** approximately 60 items
++- Exactly 5 notification items must be rendered
++- The list order defines newest-first display order
++- `id` is used only as a stable React key
++- `label` must come from translation data
+ 
+-**Constraints:**
++## 4.2 CSV / Database Schema
+ 
+-- `id` must be unique
+-- `slug` must be unique
+-- `companyName`, `serviceName`, `industry`, `challenge`, `phase`, `summary`, `outcome`, `dataCondition`, and `durationLabel` must be non-empty
+-- `selectedChallenges`, `selectedIndustries`, and `selectedPhases` must only contain values present in `availableFilters`
+-- Filtering must use exact string matches against `industry`, `challenge`, and `phase`
+-- `pageSize` is fixed at `20`
+-- Repository and logic must treat JSON as a storage detail and expose typed objects only
++No CSV or database changes are allowed.
+ 
+ ---
+ 
+@@ -1081,176 +1403,131 @@ export interface CaseStudyListResponse {
+ 
+ ## 5.1 Inputs
+ 
+-The feature receives the following inputs:
+-
+-- Page render request for `/`
+-- Filter UI state:
+-  - `selectedChallenges: string[]`
+-  - `selectedIndustries: string[]`
+-  - `selectedPhases: string[]`
+-- Pagination state:
+-  - `page: number`
+-- Existing JSON records loaded from `db/case-studies.json`
++- Existing `companyName: string` prop passed to
++  `AuthenticatedTopBar`
++- User click on notification icon button
++- User click on account icon button
++- User click on account dialog navigation items
++- User click on the notification dialog `View All Notifications` action
++- Translation values from `assets/translations/jp.ts`
+ 
+ ## 5.2 Processing Flow (Strict Order)
+ 
+-1. Render the landing page with the hero section and the case-study section shell.
+-2. Initialize the case-study section with page `1`, no selected filters, and page size `20`.
+-3. When the section loads, request case-study data from `/api/case-studies` using the current applied filters and page.
+-4. In the API route, parse query parameters into `CaseStudySearchParams`.
+-5. Validate `page`:
+-   - if missing, use `1`
+-   - if invalid, non-numeric, or less than `1`, use `1`
+-6. Normalize filter arrays:
+-   - missing values become empty arrays
+-   - duplicate selected values are removed
+-   - unknown values are ignored
+-7. Call `logic/caseStudy/getCaseStudies.ts`.
+-8. In logic, request all records from the repository.
+-9. Build `availableFilters` from the full dataset.
+-10. Filter records:
+-    - `challenge`: include a record when `selectedChallenges` is empty or its `challenge` matches one selected value
+-    - `industry`: include a record when `selectedIndustries` is empty or its `industry` matches one selected value
+-    - `phase`: include a record when `selectedPhases` is empty or its `phase` matches one selected value
+-11. Count filtered results.
+-12. Compute `totalPages` as at least `1`.
+-13. If requested `page` exceeds `totalPages`, return the last available page of results.
+-14. Slice the filtered list for the current page with a fixed page size of `20`.
+-15. Return a successful `Result<CaseStudyListResponse>` from logic.
+-16. In the API route, convert the `Result` into a JSON HTTP response.
+-17. In the UI, update the displayed cards and pagination metadata from the API response.
+-18. When users change checkboxes, update local draft filter state only.
+-19. Only when users press the search button:
+-    - copy draft filters into applied filters
+-    - reset page to `1`
+-    - fetch results again
+-20. When users press previous or next:
+-    - move one page backward or forward within valid bounds
+-    - fetch results using the current applied filters
++1. Read top bar labels and notification preview items from
++   `assets/translations/jp.ts`.
++2. Render the authenticated top bar with the existing overall layout
++   preserved.
++3. Wrap the notification icon button and account icon button in a
++   badge-capable container that can place a small red dot at the
++   top-right corner without changing icon/button sizing.
++4. When the user clicks the notification icon button, toggle only the
++   notification dialog.
++5. Render exactly 5 notification preview items in newest-first order.
++6. Render the `View All Notifications` action below the 5 items.
++7. When the user activates the `View All Notifications` action,
++   navigate to `/notifications`.
++8. When the user clicks the account icon button, toggle only the
++   account dialog.
++9. Render account dialog entries for `My Articles`, `Invoices`,
++   `Settings`, and `Logout`.
++10. When the user activates `My Articles`, navigate to `/my-articles`.
++11. When the user activates `Invoices`, navigate to `/invoices`.
++12. When the user activates `Settings`, navigate to `/settings`.
++13. `Logout` remains non-functional and must not trigger auth logic.
++14. For each new route page, render the shared top bar and a simple page
++    title only.
+ 
+ ## 5.3 Outputs
+ 
+ The feature must produce:
+ 
+-- A landing page with the required two content sections
+-- A `Result<CaseStudyListResponse>` from `logic/caseStudy/getCaseStudies.ts`
+-- A JSON API response containing paginated case-study data
+-- Updated filter and pagination UI state
+-- A rendered list of up to 20 case-study cards
++- Updated authenticated top bar UI with the required dialogs
++- Click navigation to `/notifications`, `/settings`, `/invoices`, and
++  `/my-articles`
++- Four new simple route pages
++- Translation-backed labels for all new UI text
+ 
+ ## 5.4 Error Handling
+ 
+-All errors must follow the project’s unified `Result<T>` pattern.
+-
+-Expected error types:
+-
+-- `IO_ERROR`: JSON file missing, unreadable, or invalid
+-- `VALIDATION_ERROR`: only for unrecoverable malformed query input after normalization
++No new domain or IO error handling is required because this feature is
++UI-only and has no data access.
+ 
+ UI handling rules:
+ 
+-- If the initial or subsequent fetch fails, keep the page rendered and show a simple translated error message inside the case-study section
+-- Do not clear the current checkbox draft state on fetch failure
+-- Disable pagination buttons when navigation is not possible
+-- Disable the search button only while the current request is in flight
+-- Logic and repository must not throw; use `console.error` and return an error `Result`
++- Dialog open/close behavior must remain local component state
++- Outside click handling may be extended to close open dialogs
++- No error toast, alert, or fallback UI should be added
+ 
+ ---
+ 
+-# 6. UI Specification (If applicable)
++# 6. UI Specification
+ 
+ ## 6.1 Component Structure
+ 
+-- `HomeHeroSection`
+-  - Props: none
+-  - Responsibility: render heading, subtitle, and two CTA buttons using translation keys
+-- `CaseStudySection`
+-  - Props: none
+-  - Internal state:
+-    - `draftFilters`
+-    - `appliedFilters`
+-    - `currentPage`
+-    - `items`
+-    - `totalCount`
+-    - `totalPages`
+-    - `availableFilters`
+-    - `isLoading`
+-    - `errorMessage`
+-  - Responsibility: coordinate fetching, apply filters, and render list and pagination
+-- `CaseStudyFilterPanel`
+-  - Props:
+-    - `availableFilters`
+-    - `draftFilters`
+-    - `isLoading`
+-    - `onToggle`
+-    - `onSearch`
+-  - Responsibility: render grouped multi-select controls and search button
+-- `CaseStudyCard`
+-  - Props:
+-    - `item: CaseStudyRecord`
+-  - Responsibility: render a card visually aligned with the reference image
++- Component: `AuthenticatedTopBar`
++- Props:
++  - `companyName: string`
++- Internal state:
++  - account dialog open/closed state
++  - notification dialog open/closed state
++- Interaction:
++  - notification icon opens a notification dialog
++  - account icon opens an account dialog
++  - route items use Next.js navigation primitives already used in the
++    project style
+ 
+ ## 6.2 Layout & Behavior
+ 
+-- Hero section:
+-  - Show the H1 and subtitle exactly as defined in Section 2.1 through translation keys
+-  - Show two CTA buttons side by side on desktop and stacked or wrapped on small screens
+-  - Primary CTA scrolls to the case-study section anchor on the same page
+-  - Secondary CTA links to `/client-contact`
+-- Case-study section:
+-  - Desktop layout uses two columns:
+-    - filter panel around one-third width
+-    - result column around two-thirds width
+-  - Mobile layout stacks filter panel above result list
+-  - Filter options are rendered as grouped checkboxes
+-  - Search button sits at the bottom of the filter panel
+-  - Result list shows cards vertically with consistent spacing
+-  - Pagination controls sit below the list and include previous and next buttons only
+-  - The UI may also show current page and total pages as plain text
+-- Case-study card:
+-  - Include a thumbnail area or placeholder block on the left
+-  - Include service name, company name, summary, and outcome-related information in the main content area
+-  - Include a right-side emphasis area inspired by the reference image
+-  - Include a simple four-column facts row for:
+-    - 利用料金
+-    - 初期費用
+-    - 無料プラン
+-    - 無料トライアル
+-  - Do not add hidden interactions or expandable sections
+-- Loading and empty states:
+-  - While loading, keep the section layout stable
+-  - When no records match, show a translated empty-state message instead of cards
++- Preserve the current top bar height, spacing, and visual style
++- Preserve the current notification and account icon sizes
++- Preserve the current article post button position and appearance
++- The red badge must be a small filled red circle positioned visually at
++  the top-right corner of each icon button
++- The badge must not introduce numeric text
++- The notification dialog must be a dialog/popover-style surface similar
++  in visual weight to the account dialog
++- The notification dialog content order is:
++  1. Notification item 1
++  2. Notification item 2
++  3. Notification item 3
++  4. Notification item 4
++  5. Notification item 5
++  6. `View All Notifications`
++- The account dialog content order is:
++  1. Company label
++  2. Company name
++  3. `My Articles`
++  4. `Invoices`
++  5. `Settings`
++  6. `Logout`
++- The new route pages must contain only:
++  - `PageTopBar`
++  - a simple heading for that page
++- No additional explanatory copy, cards, tabs, lists, filters, or forms
++  may be added to the new pages
+ 
+ ## 6.3 Translations
+ 
+ All UI text must use translation keys.
+-**Hard-coded text is strictly forbidden.**
+-
+-Required key families:
+-
+-- `home.hero.title`
+-- `home.hero.description`
+-- `home.hero.primaryCta`
+-- `home.hero.secondaryCta`
+-- `home.caseStudies.sectionTitle`
+-- `home.caseStudies.sectionDescription`
+-- `home.caseStudies.filters.challenge`
+-- `home.caseStudies.filters.industry`
+-- `home.caseStudies.filters.phase`
+-- `home.caseStudies.actions.search`
+-- `home.caseStudies.actions.previous`
+-- `home.caseStudies.actions.next`
+-- `home.caseStudies.states.empty`
+-- `home.caseStudies.states.error`
+-- `home.caseStudies.meta.pageLabel`
+-- `home.caseStudies.card.price`
+-- `home.caseStudies.card.initialCost`
+-- `home.caseStudies.card.freePlan`
+-- `home.caseStudies.card.freeTrial`
+-- `home.caseStudies.card.dataCondition`
+-- `home.caseStudies.card.duration`
+-- `home.caseStudies.card.outcome`
+-- `home.caseStudies.card.thumbnailFallback`
++Hard-coded UI text is strictly forbidden in components and pages.
++
++Required key groups to add under the existing translation structure:
++
++- `common.topBar.userMenu.myArticlesLabel`
++- `common.topBar.userMenu.invoicesLabel`
++- `common.topBar.notificationsMenu.items`
++- `common.topBar.notificationsMenu.viewAllLabel`
++- `pages.notifications.title`
++- `pages.settings.title`
++- `pages.invoices.title`
++- `pages.myArticles.title`
++
++Constraints:
++
++- `common.topBar.notificationsMenu.items` must contain exactly 5 strings
++- All page titles must match their route purpose only
++- Translation structure must remain consistent with the existing typed
++  object in `assets/translations/jp.ts`
+ 
+ ---
+ 
+@@ -1258,16 +1535,17 @@ Required key families:
+ 
+ The implementation must handle:
+ 
+-- Empty filter selections returning the full dataset
+-- Multiple selections within each filter group
+-- Filter combinations that produce zero results
+-- Invalid or missing query parameters
+-- Page numbers larger than the filtered result range
+-- Duplicate query values
+-- Unexpected null or undefined values from parsed query parameters
+-- Missing or broken JSON data file by returning `IO_ERROR`
+-- Mobile layout without horizontal overflow in the filter or card section
+-- Maximum 20 displayed cards per page with stable pagination boundaries
++- Clicking the notification icon repeatedly toggles only the
++  notification dialog
++- Clicking the account icon repeatedly toggles only the account dialog
++- Opening one dialog should not leave overlapping ambiguous state for
++  the other dialog
++- Clicking outside an open dialog should close it
++- Badge rendering must not shift the icon or change the button hit area
++- Missing badge text/count is intentional; do not add counts
++- New pages must remain renderable under the existing app layout without
++  additional providers or data loading
++- No hardcoded Japanese or English UI strings in component/page JSX
+ 
+ ---
+ 
+@@ -1277,13 +1555,13 @@ The feature is considered complete only if:
+ 
+ - All items in **Section 2.1 (In Scope)** are fully implemented
+ - No scope creep: nothing outside In Scope is added
+-- Only files listed in **Section 3** were modified
+-- All data structures match **Section 4** exactly
+-- The home page no longer shows the current placeholder hero-only content
+-- The hero section shows the specified heading, subtitle, and both CTAs through translation keys
+-- The case-study section can filter by challenge, industry, and phase only after pressing the search button
+-- The result area shows at most 20 cards per page
+-- Previous and next buttons move through the filtered dataset correctly
+-- About 60 sample records exist in `db/case-studies.json`
+-- Data access flows through API route, logic, repository, and JSON data file
++- Only files listed in **Section 3** were modified or created
++- No API, logic, repository, DB, or sample data code was added
++- The authenticated top bar exposes account actions for
++  `My Articles`, `Invoices`, `Settings`, and `Logout`
++- The notification icon opens a dialog showing exactly 5 items and a
++  `View All Notifications` action
++- `/notifications`, `/settings`, `/invoices`, and `/my-articles` each
++  render a simple title page
++- All new UI text is translation-backed
+ 
 diff --git a/AI/task/seed.md b/AI/task/seed.md
-index 88bb13c..9136523 100644
+index ce3ae95..5fa2edb 100644
 --- a/AI/task/seed.md
 +++ b/AI/task/seed.md
-@@ -1,15 +1,31 @@
+@@ -1,39 +1,35 @@
  # Feature Seed
  
  ## 1. Summary (必須・短く)
--プロジェクト全体使用するトップバーを作成する。
-+ランディングページの大枠を作成する。
+-日程調整スロットのリファクタリング
++AuthTopbarの修正、また、ページ遷移の追加にあたり、新規ページの簡単な作成
  ---
  
  ## 2. Purpose / 背景
--
-+ランディングページの大枠を作成する。作成に当り必要なデータはサンプルデータを作成する。
- 
+-日程調整スロットの修正を行いたい
++AuthTopbarがまだ大枠しか作成していないのでそれをより良いものにしたい
  ---
  
  ## 3. Requirements (箇条書きでOK)
-+・ランディングページは複数セクションから構成される
-+・最初にアプリについての説明を表示するセクション（以降セクション１と呼ぶ）。
-+・セクション１のH1: AI開発を、実績で学ぶ
-+・セクション１のサブタイトル：成果・データ条件・期間まで見て、納得して選べる
-+・セクション１のCTA：実績を見る(Primary) 無料で相談する(Secondary) ホバーなどのデザインはほしいが、繊維はまだ必要無い
-+
-+・次に実績カードセクション
-+・見出し：成果で、比較する。
-+・サブ：業界・課題・成果・データ条件で絞り込めます。
-+・画面左部にフィルタリングできるセクション。画面の1/3程度の幅をイメージ
-+・画面右部に実績カードが縦に並んでいる。一枚の実績カードは残りの幅を取るような横幅
-+・フィルタリングには、課題、業界、フェーズの大項目があり、少項目は適当に作成して良い。複数選択可能で、最下部にある検索ボタンを押すとフィルタリングされた実績カードが表示
-+・実績カードは一度に最大20枚表示。ページ下部にある次の記事、前の記事ボタンで次の20枚を表示
-+・実績カードデザインはuiを参照
-+・サンプルデータは60件ほど作成してほしい
-+
+-・基本的な機能はそのままに、現在のスロットの調整を少し修正したい
+-・現状、マスのクリックをすることで選択を行っているのを、ドラッグにしたい
+-・イメージとしては、クリックした場所を起点に下にドラッグすることで、長方形のスロットが作成されるイメージ
+-・各セルがあるのではなく、縦線と薄い横線があり、伸ばすことで予定を埋める
+-・Google calenderで時間の枠をとるときのイメージで行いたい。
+-・単クリックしたときはそこを起点に30分の枠がとられるだけ
+-・各枠の右上には小さな×ボタンがあり、それをクリックすることでその枠を消すことができる
+-・また、その枠内に、小さくx:xx ~ y:yyと時間が記載されている
+-
++・アカウントアイコンをクリック時に出てくるダイアログの項目の追加（現在は設定、ログアウトのみ）
++・自分の記事、請求書　のボタンを追加する
++・また、すべてのアイコンの右上に赤丸を追加できるような構造にしてほしい。ただし、現状のアイコンの大きさ等は変更したくない
++・通知ボタンをクリックしたときに、通知を新しい順に5件表示。その下にすべての通知を見るを追加。アカウントと同様にダイアログ形式
++・通知ボタンをクリック時、/notificationsに移動。その遷移用のページを作成する。内容はNotificationsと書かれているだけで問題ない
++・設定、請求書、自分の記事ボタンを押したときにも/settings, /invoices, /my-articlesに移動するようにする。内容は、通知のように自分のページの題名があるだけでよい
+ 
  
  ---
  
-@@ -21,7 +37,7 @@
+ ## 4. Scope
+ ### In Scope
+-
++・簡易ページの作成、トップバーの修正
+ 
+ ### Out of Scope
+-
++・既存ページの変更
  ---
  
  ## 5. UI Notes (あれば)
--
-+実績カードはAI/task/uiを参考
  
+ 
+-
  ---
  
+ ## 6. Edge Cases / Constraints
 diff --git a/assets/translations/jp.ts b/assets/translations/jp.ts
-index a1544b4..224085c 100644
+index 6b5e9f6..11386cb 100644
 --- a/assets/translations/jp.ts
 +++ b/assets/translations/jp.ts
-@@ -19,6 +19,54 @@ interface HomePageTranslations {
-     hero: {
-       title: string;
-       description: string;
-+      primaryCta: string;
-+      secondaryCta: string;
-+      eyebrow: string;
-+      metricsTitle: string;
-+      metrics: {
-+        caseStudies: string;
-+        cardsPerPage: string;
-+        filterGroups: string;
+@@ -4,10 +4,22 @@ interface HomePageTranslations {
+       vendorLinkLabel: string;
+       postArticleLabel: string;
+       notificationsLabel: string;
++      notificationsMenu: {
++        items: [
++          string,
++          string,
++          string,
++          string,
++          string,
++        ];
++        viewAllLabel: string;
 +      };
-+      highlights: {
-+        outcomeTitle: string;
-+        outcomeBody: string;
-+        trustTitle: string;
-+        trustBody: string;
-+      };
-+    };
-+    caseStudies: {
-+      eyebrow: string;
-+      sectionTitle: string;
-+      sectionDescription: string;
-+      filters: {
-+        challenge: string;
-+        industry: string;
-+        phase: string;
-+      };
-+      actions: {
-+        search: string;
-+        previous: string;
-+        next: string;
-+      };
-+      states: {
-+        empty: string;
-+        error: string;
-+        loading: string;
-+      };
-+      meta: {
-+        pageLabel: string;
-+        totalLabel: string;
-+      };
-+      card: {
-+        price: string;
-+        initialCost: string;
-+        freePlan: string;
-+        freeTrial: string;
-+        dataCondition: string;
-+        duration: string;
-+        outcome: string;
-+      };
+       userMenu: {
+         openLabel: string;
+         companyLabel: string;
+         companyName: string;
++        myArticlesLabel: string;
++        invoicesLabel: string;
+         settingsLabel: string;
+         logoutLabel: string;
+       };
+@@ -338,6 +350,20 @@ interface HomePageTranslations {
+       email: string;
      };
    };
++  pages: {
++    notifications: {
++      title: string;
++    };
++    settings: {
++      title: string;
++    };
++    invoices: {
++      title: string;
++    };
++    myArticles: {
++      title: string;
++    };
++  };
  }
-@@ -42,9 +90,59 @@ const translations: HomePageTranslations = {
-   },
-   home: {
-     hero: {
--      title: "Jisha project has started.",
-+      title: "AI開発を、実績で学ぶ",
-       description:
--        "This is the initial top page for the Next.js application.",
-+        "成果・データ条件・期間まで見て、納得して選べる",
-+      primaryCta: "実績を見る",
-+      secondaryCta: "無料で相談する",
-+      eyebrow: "AI Development Case Library",
-+      metricsTitle: "Selected Metrics",
-+      metrics: {
-+        caseStudies: "case studies",
-+        cardsPerPage: "cards per page",
-+        filterGroups: "filter groups",
+ 
+ const translations: HomePageTranslations = {
+@@ -346,10 +372,22 @@ const translations: HomePageTranslations = {
+       vendorLinkLabel: "ベンダーの方はこちら",
+       postArticleLabel: "記事投稿",
+       notificationsLabel: "通知",
++      notificationsMenu: {
++        items: [
++          "新しいメッセージがあります",
++          "請求書の確認依頼があります",
++          "記事に新しいリアクションが付きました",
++          "設定更新のお知らせがあります",
++          "マイ記事の閲覧数が更新されました",
++        ],
++        viewAllLabel: "すべての通知を見る",
 +      },
-+      highlights: {
-+        outcomeTitle: "Outcome",
-+        outcomeBody:
-+          "成果・データ条件・期間まで同じ面で比較できる構成に限定。",
-+        trustTitle: "Trust",
-+        trustBody: "まず実績を見て、次に相談する導線を一画面に集約。",
-+      },
-+    },
-+    caseStudies: {
-+      eyebrow: "Case Studies",
-+      sectionTitle: "成果で、比較する。",
-+      sectionDescription:
-+        "業界・課題・成果・データ条件で絞り込めます。",
-+      filters: {
-+        challenge: "課題",
-+        industry: "業界",
-+        phase: "フェーズ",
-+      },
-+      actions: {
-+        search: "検索する",
-+        previous: "前の記事",
-+        next: "次の記事",
-+      },
-+      states: {
-+        empty: "条件に一致する実績はありません。",
-+        error: "実績データの取得に失敗しました。",
-+        loading: "実績データを読み込み中です。",
-+      },
-+      meta: {
-+        pageLabel: "ページ",
-+        totalLabel: "総件数",
-+      },
-+      card: {
-+        price: "利用料金",
-+        initialCost: "初期費用",
-+        freePlan: "無料プラン",
-+        freeTrial: "無料トライアル",
-+        dataCondition: "データ条件",
-+        duration: "期間",
-+        outcome: "成果",
-+      },
+       userMenu: {
+         openLabel: "ユーザーメニューを開く",
+         companyLabel: "Company",
+         companyName: "株式会社Jisha",
++        myArticlesLabel: "自分の記事",
++        invoicesLabel: "請求書",
+         settingsLabel: "設定",
+         logoutLabel: "ログアウト",
+       },
+@@ -696,6 +734,20 @@ const translations: HomePageTranslations = {
+       email: "メールアドレスの形式が正しくありません。",
      },
    },
++  pages: {
++    notifications: {
++      title: "Notifications",
++    },
++    settings: {
++      title: "Settings",
++    },
++    invoices: {
++      title: "Invoices",
++    },
++    myArticles: {
++      title: "My Articles",
++    },
++  },
  };
-diff --git a/src/app/page.tsx b/src/app/page.tsx
-index 72681c9..d2ee51e 100644
---- a/src/app/page.tsx
-+++ b/src/app/page.tsx
-@@ -1,7 +1,7 @@
- import PublicTopBar from "@/components/common/PublicTopBar";
- import PublicFooter from "@/components/common/PublicFooter";
--
--import translations from "../../assets/translations/jp";
-+import CaseStudySection from "@/components/home/CaseStudySection";
-+import HomeHeroSection from "@/components/home/HomeHeroSection";
  
+ export default translations;
+diff --git a/src/components/common/AuthenticatedTopBar.tsx b/src/components/common/AuthenticatedTopBar.tsx
+index aa1a438..a597786 100644
+--- a/src/components/common/AuthenticatedTopBar.tsx
++++ b/src/components/common/AuthenticatedTopBar.tsx
+@@ -2,7 +2,15 @@
+ 
+ import Image from "next/image";
+ import Link from "next/link";
+-import { Bell, LogOut, Settings, SquarePen, UserCircle2 } from "lucide-react";
++import {
++  Bell,
++  FileText,
++  LogOut,
++  ReceiptText,
++  Settings,
++  SquarePen,
++  UserCircle2,
++} from "lucide-react";
+ import { useEffect, useRef, useState } from "react";
+ 
+ import { Button } from "@/components/ui/button";
+@@ -13,6 +21,11 @@ interface AuthenticatedTopBarProps {
+   companyName: string;
+ }
+ 
++interface TopBarNotificationItem {
++  id: string;
++  label: string;
++}
++
  /**
-  * Renders the public home page.
-@@ -9,21 +9,11 @@ import translations from "../../assets/translations/jp";
-  * @returns The home page.
-  */
- export default function Home() {
--  const { title, description } = translations.home.hero;
--
+  * Renders the logged-in top bar with a front-end-only user menu.
+  *
+@@ -23,26 +36,43 @@ interface AuthenticatedTopBarProps {
+ export default function AuthenticatedTopBar({
+   companyName,
+ }: AuthenticatedTopBarProps) {
+-  const [isMenuOpen, setIsMenuOpen] = useState(false);
++  const [isNotificationMenuOpen, setIsNotificationMenuOpen] =
++    useState(false);
++  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
++  const notificationContainerRef = useRef<HTMLDivElement>(null);
+   const menuContainerRef = useRef<HTMLDivElement>(null);
+   const labels = translations.common.topBar;
++  const notificationItems: TopBarNotificationItem[] =
++    labels.notificationsMenu.items.map((label, index) => ({
++      id: `notification-${index + 1}`,
++      label,
++    }));
+ 
+   useEffect(() => {
+-    if (!isMenuOpen) {
++    if (!isNotificationMenuOpen && !isUserMenuOpen) {
+       return;
+     }
+ 
+     /**
+-     * Closes the menu when a pointer event happens outside the menu area.
++     * Closes dialogs when a pointer event happens outside their area.
+      *
+      * @param event - The pointer event from the document.
+      */
+     function handlePointerDown(event: PointerEvent) {
++      const target = event.target as Node;
++
++      if (
++        notificationContainerRef.current &&
++        !notificationContainerRef.current.contains(target)
++      ) {
++        setIsNotificationMenuOpen(false);
++      }
++
+       if (
+         menuContainerRef.current &&
+-        !menuContainerRef.current.contains(event.target as Node)
++        !menuContainerRef.current.contains(target)
+       ) {
+-        setIsMenuOpen(false);
++        setIsUserMenuOpen(false);
+       }
+     }
+ 
+@@ -51,7 +81,7 @@ export default function AuthenticatedTopBar({
+     return () => {
+       document.removeEventListener("pointerdown", handlePointerDown);
+     };
+-  }, [isMenuOpen]);
++  }, [isNotificationMenuOpen, isUserMenuOpen]);
+ 
    return (
--    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_46%,#ffffff_100%)]">
-+    <main className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#f4f8ff_38%,#f8fbff_68%,#ffffff_100%)]">
-       <PublicTopBar />
--      <section className="flex min-h-[calc(100vh-9rem)] items-center justify-center px-6 py-20">
--        <div className="w-full max-w-3xl rounded-[2rem] border border-slate-200/80 bg-white/80 px-8 py-16 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-sm">
--          <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
--            {title}
--          </h1>
--          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
--            {description}
--          </p>
--        </div>
--      </section>
-+      <HomeHeroSection />
-+      <CaseStudySection />
-       <PublicFooter />
-     </main>
-   );
+     <header className="fixed inset-x-0 top-0 z-40 border-b border-black/6 bg-white/68 backdrop-blur-md">
+@@ -67,30 +97,67 @@ export default function AuthenticatedTopBar({
+           />
+         </Link>
+         <div className="flex items-center gap-2 sm:gap-3">
+-          <Button
+-            type="button"
+-            variant="ghost"
+-            size="icon"
+-            className="rounded-full text-slate-700 hover:bg-slate-100"
+-            aria-label={labels.notificationsLabel}
+-          >
+-            <Bell className="size-5" />
+-          </Button>
++          <div ref={notificationContainerRef} className="relative">
++            <div className="relative inline-flex">
++              <Button
++                type="button"
++                variant="ghost"
++                size="icon"
++                className="rounded-full text-slate-700 hover:bg-slate-100"
++                aria-expanded={isNotificationMenuOpen}
++                aria-label={labels.notificationsLabel}
++                onClick={() => {
++                  setIsNotificationMenuOpen((open) => !open);
++                  setIsUserMenuOpen(false);
++                }}
++              >
++                <Bell className="size-5" />
++              </Button>
++              <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-red-500" />
++            </div>
++            {isNotificationMenuOpen ? (
++              <div className="absolute right-0 top-[calc(100%+0.75rem)] w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
++                <div className="flex flex-col">
++                  {notificationItems.map((item) => (
++                    <div
++                      key={item.id}
++                      className="border-b border-slate-100 px-3 py-3 text-sm text-slate-700 last:border-b-0"
++                    >
++                      {item.label}
++                    </div>
++                  ))}
++                </div>
++                <Button
++                  asChild
++                  variant="ghost"
++                  className="mt-2 w-full justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
++                >
++                  <Link href="/notifications">
++                    {labels.notificationsMenu.viewAllLabel}
++                  </Link>
++                </Button>
++              </div>
++            ) : null}
++          </div>
+           <div ref={menuContainerRef} className="relative">
+-            <Button
+-              type="button"
+-              variant="ghost"
+-              size="icon"
+-              className="rounded-full text-slate-700 hover:bg-slate-100"
+-              aria-expanded={isMenuOpen}
+-              aria-label={labels.userMenu.openLabel}
+-              onClick={() => {
+-                setIsMenuOpen((open) => !open);
+-              }}
+-            >
+-              <UserCircle2 className="size-6" />
+-            </Button>
+-            {isMenuOpen ? (
++            <div className="relative inline-flex">
++              <Button
++                type="button"
++                variant="ghost"
++                size="icon"
++                className="rounded-full text-slate-700 hover:bg-slate-100"
++                aria-expanded={isUserMenuOpen}
++                aria-label={labels.userMenu.openLabel}
++                onClick={() => {
++                  setIsUserMenuOpen((open) => !open);
++                  setIsNotificationMenuOpen(false);
++                }}
++              >
++                <UserCircle2 className="size-6" />
++              </Button>
++              <span className="pointer-events-none absolute right-1 top-1 size-2 rounded-full bg-red-500" />
++            </div>
++            {isUserMenuOpen ? (
+               <div className="absolute right-0 top-[calc(100%+0.75rem)] w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_20px_50px_rgba(15,23,42,0.14)]">
+                 <div className="border-b border-slate-100 px-2 pb-3">
+                   <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+@@ -102,12 +169,34 @@ export default function AuthenticatedTopBar({
+                 </div>
+                 <div className="mt-3 flex flex-col gap-1">
+                   <Button
+-                    type="button"
++                    asChild
++                    variant="ghost"
++                    className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
++                  >
++                    <Link href="/my-articles">
++                      <FileText className="size-4" />
++                      {labels.userMenu.myArticlesLabel}
++                    </Link>
++                  </Button>
++                  <Button
++                    asChild
++                    variant="ghost"
++                    className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
++                  >
++                    <Link href="/invoices">
++                      <ReceiptText className="size-4" />
++                      {labels.userMenu.invoicesLabel}
++                    </Link>
++                  </Button>
++                  <Button
++                    asChild
+                     variant="ghost"
+                     className="justify-start rounded-xl px-3 py-2 text-sm text-slate-700"
+                   >
+-                    <Settings className="size-4" />
+-                    {labels.userMenu.settingsLabel}
++                    <Link href="/settings">
++                      <Settings className="size-4" />
++                      {labels.userMenu.settingsLabel}
++                    </Link>
+                   </Button>
+                   <Button
+                     type="button"
+diff --git a/src/utils/auth/mockAuthState.ts b/src/utils/auth/mockAuthState.ts
+index 77e5006..8e9d817 100644
+--- a/src/utils/auth/mockAuthState.ts
++++ b/src/utils/auth/mockAuthState.ts
+@@ -10,5 +10,5 @@ export const REQUEST_LOGIN_STATE_HEADER = "x-is-logged-in";
+ export function parseMockLoginState(
+   value: string | null | undefined,
+ ): boolean {
+-  return value === "true";
++  return value === "false";
+ }
 
 ---
 
@@ -902,7 +3353,13 @@ to evaluate architectural consistency, naming, boundaries, and long-term maintai
 ---
 
 ## 1. Overview
-Build the first public landing page skeleton for the application. The page must present a hero section that explains the service and a case-study listing section where users can filter and paginate sample achievements before contacting the team. This feature replaces the current placeholder home page and introduces sample JSON-backed data, backend-facing retrieval logic, and domain UI for the landing page only.
+The authenticated top bar already exists, but its account menu and
+notification behavior are incomplete for the current navigation needs.
+This feature extends the existing authenticated top bar by adding
+menu items, notification preview behavior, red badge support on icon
+buttons, and four simple destination pages for the new routes. The
+feature is UI-only and must not introduce backend, repository, or
+business-logic changes.
 
 ---
 
@@ -910,57 +3367,45 @@ Build the first public landing page skeleton for the application. The page must 
 
 ## 2.1 In Scope (MUST implement)
 
-- [ ] Replace the current placeholder content in `src/app/page.tsx` with a landing page composed of:
-  - a hero section
-  - a case-study listing section
-  - the existing public top bar and footer
-- [ ] Implement hero section content with translation keys for:
-  - H1: `AI開発を、実績で学ぶ`
-  - subtitle: `成果・データ条件・期間まで見て、納得して選べる`
-  - primary CTA: `実績を見る`
-  - secondary CTA: `無料で相談する`
-- [ ] Add visible hover styling for both hero CTA buttons.
-- [ ] Implement a case-study section with:
-  - section heading `成果で、比較する。`
-  - section subheading `業界・課題・成果・データ条件で絞り込めます。`
-  - left filter panel occupying about one-third of the section width on desktop
-  - right result area occupying the remaining width on desktop
-  - stacked case-study cards in the result area
-- [ ] Implement filter UI with three groups only:
-  - challenge
-  - industry
-  - phase
-- [ ] Each filter group must expose multiple selectable options.
-- [ ] Filtering must be applied only when the user presses a search button at the bottom of the filter panel.
-- [ ] Case-study results must display at most 20 cards per page.
-- [ ] Implement previous-page and next-page buttons below the result list to move through paginated results.
-- [ ] Create about 60 sample case-study records as JSON data under `db/`.
-- [ ] Route all sample data access through:
-  - page/component
-  - API route
-  - logic layer
-  - repository layer
-  - JSON data file
-- [ ] Add the necessary shared types for landing-page data and filtering.
-- [ ] Add translation keys for all newly added UI text in `assets/translations/jp.ts`.
-- [ ] Match the overall case-study card composition to `AI/task/ui/実績カード参考.png` without introducing extra card features beyond the data defined in Section 4.
+- [ ] Extend the existing authenticated top bar account dialog to add
+      navigation entries for `My Articles` and `Invoices` in addition to
+      the existing `Settings` and `Logout` entries.
+- [ ] Make the `Settings`, `My Articles`, and `Invoices` account dialog
+      entries navigate to `/settings`, `/my-articles`, and `/invoices`.
+- [ ] Keep `Logout` as a visible menu entry only. No logout logic,
+      auth state change, API call, or redirect may be added.
+- [ ] Add a notification dialog opened from the existing notification
+      icon button. The dialog must display exactly 5 notification items
+      in newest-first order, followed by a link/button labeled
+      `View All Notifications`.
+- [ ] Make the `View All Notifications` action navigate to
+      `/notifications`.
+- [ ] Add support for showing a small red circular badge at the
+      top-right corner of each top bar icon button without changing the
+      current icon size, button size, or layout spacing.
+- [ ] Apply the badge-capable structure to the notification icon button
+      and the account icon button so both can show the red badge.
+- [ ] Create simple pages for `/notifications`, `/settings`,
+      `/invoices`, and `/my-articles`.
+- [ ] Each new page must render only the shared top bar and a simple
+      page title matching the route purpose.
+- [ ] Add all newly required UI text through translation keys in
+      `assets/translations/jp.ts`. No UI text may be hardcoded in
+      components or pages.
 
 ## 2.2 Out of Scope (MUST NOT implement)
 
 - No refactoring of unrelated code
 - No renaming existing identifiers
-- No changes to UI beyond what is defined in In Scope
-- No new endpoints or data models not explicitly listed
-- No design or layout overhaul outside the landing page
-- No performance optimization unless required
+- No changes to public top bar behavior
+- No changes to existing pages other than adding the new route pages
+- No new API routes, logic modules, repository code, or DB/sample data
+- No real notification fetching, persistence, unread state management,
+  or mark-as-read behavior
+- No logout implementation
+- No badge count display; the badge is visual only and contains no text
+- No design or layout overhaul beyond the required menu/dialog additions
 - No modification of files not listed in Section 3
-- No detail page, modal, accordion, or expand/collapse behavior for case-study cards
-- No free-text search input
-- No sorting controls
-- No server actions
-- No database integration beyond JSON sample data
-- No analytics, tracking, or form submission implementation
-- No animation beyond normal hover/focus transitions
 
 ---
 
@@ -970,110 +3415,56 @@ Build the first public landing page skeleton for the application. The page must 
 > All other files are strictly off-limits.
 
 ## 3.1 New Files
-
-- `src/app/api/case-studies/route.ts`: API endpoint returning filtered and paginated case-study data
-- `src/components/home/HomeHeroSection.tsx`: hero section UI
-- `src/components/home/CaseStudyFilterPanel.tsx`: filter controls and search button
-- `src/components/home/CaseStudyCard.tsx`: individual case-study card UI
-- `src/components/home/CaseStudySection.tsx`: section layout, state handling, fetch coordination, pagination UI
-- `logic/caseStudy/caseStudyRepository.ts`: repository for loading JSON sample data
-- `logic/caseStudy/getCaseStudies.ts`: landing-page case-study retrieval use case
-- `src/types/caseStudy.ts`: shared types for records, filters, request params, and API payload
-- `db/case-studies.json`: sample case-study records
+- `src/app/notifications/page.tsx`: simple route page for notifications
+- `src/app/settings/page.tsx`: simple route page for settings
+- `src/app/invoices/page.tsx`: simple route page for invoices
+- `src/app/my-articles/page.tsx`: simple route page for my articles
 
 ## 3.2 Modified Files
-
-- `src/app/page.tsx`: replace placeholder home content with landing-page composition
-- `assets/translations/jp.ts`: add all landing-page translation keys
+- `src/components/common/AuthenticatedTopBar.tsx`: add notification
+  dialog, account menu items, route links, and badge-capable icon
+  button structure
+- `assets/translations/jp.ts`: add all translation keys required by the
+  new dialog items, notification preview content, view-all action, and
+  simple page titles
 
 ## 3.3 Reference Only (MUST NOT modify)
-
 - `AGENTS.md`
 - `AI/task/seed.md`
 - `AI/task/templates/instruction_template.md`
-- `AI/task/ui/実績カード参考.png`
-- `src/components/common/PublicTopBar.tsx`
-- `src/components/common/PublicFooter.tsx`
-- `src/types/result.ts`
+- `src/components/common/TopBar.tsx`
+- `src/components/common/PageTopBar.tsx`
 
 ---
 
 # 4. Data Structures & Models
 
-> All relevant data definitions must be explicitly stated here.
-> The AI must **not** add, remove, or alter fields unless stated in this section.
+This feature does not interact with API routes, domain logic, sample
+data, or a database.
 
 ## 4.1 TypeScript Interfaces / Types
 
+The implementation may add only local UI-only types needed for the top
+bar component. If added, the structure must stay limited to the
+following shape:
+
 ```ts
-export type CaseStudyFilterGroup =
-  | "challenge"
-  | "industry"
-  | "phase";
-
-export interface CaseStudyRecord {
+interface TopBarNotificationItem {
   id: string;
-  slug: string;
-  companyName: string;
-  serviceName: string;
-  industry: string;
-  challenge: string;
-  phase: string;
-  summary: string;
-  outcome: string;
-  dataCondition: string;
-  durationLabel: string;
-  thumbnailLabel: string;
-  priceLabel: string;
-  initialCostLabel: string;
-  freePlanLabel: string;
-  trialLabel: string;
-}
-
-export interface CaseStudyFilterOption {
   label: string;
-  value: string;
-}
-
-export interface CaseStudyFilterGroups {
-  challenge: CaseStudyFilterOption[];
-  industry: CaseStudyFilterOption[];
-  phase: CaseStudyFilterOption[];
-}
-
-export interface CaseStudySearchParams {
-  selectedChallenges: string[];
-  selectedIndustries: string[];
-  selectedPhases: string[];
-  page: number;
-  pageSize: 20;
-}
-
-export interface CaseStudyListResponse {
-  items: CaseStudyRecord[];
-  totalCount: number;
-  currentPage: number;
-  pageSize: 20;
-  totalPages: number;
-  availableFilters: CaseStudyFilterGroups;
 }
 ```
 
-## 4.2 JSON Schema
+Constraints:
 
-- **Target file:** `db/case-studies.json`
-- **Top-level shape:** array of `CaseStudyRecord`
-- **Record count:** approximately 60 items
+- Exactly 5 notification items must be rendered
+- The list order defines newest-first display order
+- `id` is used only as a stable React key
+- `label` must come from translation data
 
-**Constraints:**
+## 4.2 CSV / Database Schema
 
-- `id` must be unique
-- `slug` must be unique
-- `companyName`, `serviceName`, `industry`, `challenge`, `phase`, `summary`, `outcome`, `dataCondition`, and `durationLabel` must be non-empty
-- `selectedChallenges`, `selectedIndustries`, and `selectedPhases` must only contain values present in `availableFilters`
-- Filtering must use exact string matches against `industry`, `challenge`, and `phase`
-- `pageSize` is fixed at `20`
-- Repository and logic must treat JSON as a storage detail and expose typed objects only
+No CSV or database changes are allowed.
 
 ---
 
@@ -1081,176 +3472,131 @@ export interface CaseStudyListResponse {
 
 ## 5.1 Inputs
 
-The feature receives the following inputs:
-
-- Page render request for `/`
-- Filter UI state:
-  - `selectedChallenges: string[]`
-  - `selectedIndustries: string[]`
-  - `selectedPhases: string[]`
-- Pagination state:
-  - `page: number`
-- Existing JSON records loaded from `db/case-studies.json`
+- Existing `companyName: string` prop passed to
+  `AuthenticatedTopBar`
+- User click on notification icon button
+- User click on account icon button
+- User click on account dialog navigation items
+- User click on the notification dialog `View All Notifications` action
+- Translation values from `assets/translations/jp.ts`
 
 ## 5.2 Processing Flow (Strict Order)
 
-1. Render the landing page with the hero section and the case-study section shell.
-2. Initialize the case-study section with page `1`, no selected filters, and page size `20`.
-3. When the section loads, request case-study data from `/api/case-studies` using the current applied filters and page.
-4. In the API route, parse query parameters into `CaseStudySearchParams`.
-5. Validate `page`:
-   - if missing, use `1`
-   - if invalid, non-numeric, or less than `1`, use `1`
-6. Normalize filter arrays:
-   - missing values become empty arrays
-   - duplicate selected values are removed
-   - unknown values are ignored
-7. Call `logic/caseStudy/getCaseStudies.ts`.
-8. In logic, request all records from the repository.
-9. Build `availableFilters` from the full dataset.
-10. Filter records:
-    - `challenge`: include a record when `selectedChallenges` is empty or its `challenge` matches one selected value
-    - `industry`: include a record when `selectedIndustries` is empty or its `industry` matches one selected value
-    - `phase`: include a record when `selectedPhases` is empty or its `phase` matches one selected value
-11. Count filtered results.
-12. Compute `totalPages` as at least `1`.
-13. If requested `page` exceeds `totalPages`, return the last available page of results.
-14. Slice the filtered list for the current page with a fixed page size of `20`.
-15. Return a successful `Result<CaseStudyListResponse>` from logic.
-16. In the API route, convert the `Result` into a JSON HTTP response.
-17. In the UI, update the displayed cards and pagination metadata from the API response.
-18. When users change checkboxes, update local draft filter state only.
-19. Only when users press the search button:
-    - copy draft filters into applied filters
-    - reset page to `1`
-    - fetch results again
-20. When users press previous or next:
-    - move one page backward or forward within valid bounds
-    - fetch results using the current applied filters
+1. Read top bar labels and notification preview items from
+   `assets/translations/jp.ts`.
+2. Render the authenticated top bar with the existing overall layout
+   preserved.
+3. Wrap the notification icon button and account icon button in a
+   badge-capable container that can place a small red dot at the
+   top-right corner without changing icon/button sizing.
+4. When the user clicks the notification icon button, toggle only the
+   notification dialog.
+5. Render exactly 5 notification preview items in newest-first order.
+6. Render the `View All Notifications` action below the 5 items.
+7. When the user activates the `View All Notifications` action,
+   navigate to `/notifications`.
+8. When the user clicks the account icon button, toggle only the
+   account dialog.
+9. Render account dialog entries for `My Articles`, `Invoices`,
+   `Settings`, and `Logout`.
+10. When the user activates `My Articles`, navigate to `/my-articles`.
+11. When the user activates `Invoices`, navigate to `/invoices`.
+12. When the user activates `Settings`, navigate to `/settings`.
+13. `Logout` remains non-functional and must not trigger auth logic.
+14. For each new route page, render the shared top bar and a simple page
+    title only.
 
 ## 5.3 Outputs
 
 The feature must produce:
 
-- A landing page with the required two content sections
-- A `Result<CaseStudyListResponse>` from `logic/caseStudy/getCaseStudies.ts`
-- A JSON API response containing paginated case-study data
-- Updated filter and pagination UI state
-- A rendered list of up to 20 case-study cards
+- Updated authenticated top bar UI with the required dialogs
+- Click navigation to `/notifications`, `/settings`, `/invoices`, and
+  `/my-articles`
+- Four new simple route pages
+- Translation-backed labels for all new UI text
 
 ## 5.4 Error Handling
 
-All errors must follow the project’s unified `Result<T>` pattern.
-
-Expected error types:
-
-- `IO_ERROR`: JSON file missing, unreadable, or invalid
-- `VALIDATION_ERROR`: only for unrecoverable malformed query input after normalization
+No new domain or IO error handling is required because this feature is
+UI-only and has no data access.
 
 UI handling rules:
 
-- If the initial or subsequent fetch fails, keep the page rendered and show a simple translated error message inside the case-study section
-- Do not clear the current checkbox draft state on fetch failure
-- Disable pagination buttons when navigation is not possible
-- Disable the search button only while the current request is in flight
-- Logic and repository must not throw; use `console.error` and return an error `Result`
+- Dialog open/close behavior must remain local component state
+- Outside click handling may be extended to close open dialogs
+- No error toast, alert, or fallback UI should be added
 
 ---
 
-# 6. UI Specification (If applicable)
+# 6. UI Specification
 
 ## 6.1 Component Structure
 
-- `HomeHeroSection`
-  - Props: none
-  - Responsibility: render heading, subtitle, and two CTA buttons using translation keys
-- `CaseStudySection`
-  - Props: none
-  - Internal state:
-    - `draftFilters`
-    - `appliedFilters`
-    - `currentPage`
-    - `items`
-    - `totalCount`
-    - `totalPages`
-    - `availableFilters`
-    - `isLoading`
-    - `errorMessage`
-  - Responsibility: coordinate fetching, apply filters, and render list and pagination
-- `CaseStudyFilterPanel`
-  - Props:
-    - `availableFilters`
-    - `draftFilters`
-    - `isLoading`
-    - `onToggle`
-    - `onSearch`
-  - Responsibility: render grouped multi-select controls and search button
-- `CaseStudyCard`
-  - Props:
-    - `item: CaseStudyRecord`
-  - Responsibility: render a card visually aligned with the reference image
+- Component: `AuthenticatedTopBar`
+- Props:
+  - `companyName: string`
+- Internal state:
+  - account dialog open/closed state
+  - notification dialog open/closed state
+- Interaction:
+  - notification icon opens a notification dialog
+  - account icon opens an account dialog
+  - route items use Next.js navigation primitives already used in the
+    project style
 
 ## 6.2 Layout & Behavior
 
-- Hero section:
-  - Show the H1 and subtitle exactly as defined in Section 2.1 through translation keys
-  - Show two CTA buttons side by side on desktop and stacked or wrapped on small screens
-  - Primary CTA scrolls to the case-study section anchor on the same page
-  - Secondary CTA links to `/client-contact`
-- Case-study section:
-  - Desktop layout uses two columns:
-    - filter panel around one-third width
-    - result column around two-thirds width
-  - Mobile layout stacks filter panel above result list
-  - Filter options are rendered as grouped checkboxes
-  - Search button sits at the bottom of the filter panel
-  - Result list shows cards vertically with consistent spacing
-  - Pagination controls sit below the list and include previous and next buttons only
-  - The UI may also show current page and total pages as plain text
-- Case-study card:
-  - Include a thumbnail area or placeholder block on the left
-  - Include service name, company name, summary, and outcome-related information in the main content area
-  - Include a right-side emphasis area inspired by the reference image
-  - Include a simple four-column facts row for:
-    - 利用料金
-    - 初期費用
-    - 無料プラン
-    - 無料トライアル
-  - Do not add hidden interactions or expandable sections
-- Loading and empty states:
-  - While loading, keep the section layout stable
-  - When no records match, show a translated empty-state message instead of cards
+- Preserve the current top bar height, spacing, and visual style
+- Preserve the current notification and account icon sizes
+- Preserve the current article post button position and appearance
+- The red badge must be a small filled red circle positioned visually at
+  the top-right corner of each icon button
+- The badge must not introduce numeric text
+- The notification dialog must be a dialog/popover-style surface similar
+  in visual weight to the account dialog
+- The notification dialog content order is:
+  1. Notification item 1
+  2. Notification item 2
+  3. Notification item 3
+  4. Notification item 4
+  5. Notification item 5
+  6. `View All Notifications`
+- The account dialog content order is:
+  1. Company label
+  2. Company name
+  3. `My Articles`
+  4. `Invoices`
+  5. `Settings`
+  6. `Logout`
+- The new route pages must contain only:
+  - `PageTopBar`
+  - a simple heading for that page
+- No additional explanatory copy, cards, tabs, lists, filters, or forms
+  may be added to the new pages
 
 ## 6.3 Translations
 
 All UI text must use translation keys.
-**Hard-coded text is strictly forbidden.**
+Hard-coded UI text is strictly forbidden in components and pages.
 
-Required key families:
+Required key groups to add under the existing translation structure:
 
-- `home.hero.title`
-- `home.hero.description`
-- `home.hero.primaryCta`
-- `home.hero.secondaryCta`
-- `home.caseStudies.sectionTitle`
-- `home.caseStudies.sectionDescription`
-- `home.caseStudies.filters.challenge`
-- `home.caseStudies.filters.industry`
-- `home.caseStudies.filters.phase`
-- `home.caseStudies.actions.search`
-- `home.caseStudies.actions.previous`
-- `home.caseStudies.actions.next`
-- `home.caseStudies.states.empty`
-- `home.caseStudies.states.error`
-- `home.caseStudies.meta.pageLabel`
-- `home.caseStudies.card.price`
-- `home.caseStudies.card.initialCost`
-- `home.caseStudies.card.freePlan`
-- `home.caseStudies.card.freeTrial`
-- `home.caseStudies.card.dataCondition`
-- `home.caseStudies.card.duration`
-- `home.caseStudies.card.outcome`
-- `home.caseStudies.card.thumbnailFallback`
+- `common.topBar.userMenu.myArticlesLabel`
+- `common.topBar.userMenu.invoicesLabel`
+- `common.topBar.notificationsMenu.items`
+- `common.topBar.notificationsMenu.viewAllLabel`
+- `pages.notifications.title`
+- `pages.settings.title`
+- `pages.invoices.title`
+- `pages.myArticles.title`
+
+Constraints:
+
+- `common.topBar.notificationsMenu.items` must contain exactly 5 strings
+- All page titles must match their route purpose only
+- Translation structure must remain consistent with the existing typed
+  object in `assets/translations/jp.ts`
 
 ---
 
@@ -1258,16 +3604,17 @@ Required key families:
 
 The implementation must handle:
 
-- Empty filter selections returning the full dataset
-- Multiple selections within each filter group
-- Filter combinations that produce zero results
-- Invalid or missing query parameters
-- Page numbers larger than the filtered result range
-- Duplicate query values
-- Unexpected null or undefined values from parsed query parameters
-- Missing or broken JSON data file by returning `IO_ERROR`
-- Mobile layout without horizontal overflow in the filter or card section
-- Maximum 20 displayed cards per page with stable pagination boundaries
+- Clicking the notification icon repeatedly toggles only the
+  notification dialog
+- Clicking the account icon repeatedly toggles only the account dialog
+- Opening one dialog should not leave overlapping ambiguous state for
+  the other dialog
+- Clicking outside an open dialog should close it
+- Badge rendering must not shift the icon or change the button hit area
+- Missing badge text/count is intentional; do not add counts
+- New pages must remain renderable under the existing app layout without
+  additional providers or data loading
+- No hardcoded Japanese or English UI strings in component/page JSX
 
 ---
 
@@ -1277,13 +3624,13 @@ The feature is considered complete only if:
 
 - All items in **Section 2.1 (In Scope)** are fully implemented
 - No scope creep: nothing outside In Scope is added
-- Only files listed in **Section 3** were modified
-- All data structures match **Section 4** exactly
-- The home page no longer shows the current placeholder hero-only content
-- The hero section shows the specified heading, subtitle, and both CTAs through translation keys
-- The case-study section can filter by challenge, industry, and phase only after pressing the search button
-- The result area shows at most 20 cards per page
-- Previous and next buttons move through the filtered dataset correctly
-- About 60 sample records exist in `db/case-studies.json`
-- Data access flows through API route, logic, repository, and JSON data file
+- Only files listed in **Section 3** were modified or created
+- No API, logic, repository, DB, or sample data code was added
+- The authenticated top bar exposes account actions for
+  `My Articles`, `Invoices`, `Settings`, and `Logout`
+- The notification icon opens a dialog showing exactly 5 items and a
+  `View All Notifications` action
+- `/notifications`, `/settings`, `/invoices`, and `/my-articles` each
+  render a simple title page
+- All new UI text is translation-backed
 

@@ -10,5 +10,5 @@ export const REQUEST_LOGIN_STATE_HEADER = "x-is-logged-in";
 export function parseMockLoginState(
   value: string | null | undefined,
 ): boolean {
-  return value === "true";
+  return value === "false";
 }
